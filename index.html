@@ -17,9 +17,9 @@
     <div class="flex flex-col md:flex-row justify-between items-center bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
       <div>
         <h1 class="text-2xl font-bold text-white">Painel Operacional e Gerencial de TAs</h1>
-        <p class="text-slate-400 text-sm">Monitoramento de SLAs, GMG e histórico de atendimentos</p>
+        <p class="text-slate-400 text-sm">Monitoramento de SLAs, GMG e histórico de tratativas em tempo real</p>
       </div>
-      <button onclick="carregarDados()" class="mt-4 md:mt-0 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition font-medium text-sm flex items-center gap-2">
+      <button onclick="carregarDados()" class="mt-4 md:mt-0 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition font-medium text-sm flex items-center gap-2 shadow">
         🔄 Atualizar Dados
       </button>
     </div>
@@ -27,7 +27,7 @@
     <!-- PAINEL GERENCIAL / CARDS DE INDICADORES (KPIs) -->
     <div class="space-y-4">
       <h2 class="text-lg font-bold text-slate-200 flex items-center gap-2">
-        📊 Resumo de TAs na Base Ativa
+        📊 Resumo Executivo (Base Ativa)
       </h2>
 
       <!-- Grid de Indicadores -->
@@ -35,31 +35,31 @@
         
         <!-- 1. Total TAs Ativos -->
         <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow cursor-pointer hover:border-slate-500 transition" onclick="aplicarFiltroSLA('TODOS_SLA')">
-          <span class="text-slate-400 text-xs block">Total TAs (Base Ativa)</span>
+          <span class="text-slate-400 text-xs block font-medium">Total TAs (Base Ativa)</span>
           <span id="kpi-total-ativos" class="text-2xl font-bold text-white">0</span>
         </div>
 
         <!-- 2. Próximo de Vencer (2h a 4h) -->
         <div class="bg-slate-800 p-4 rounded-xl border border-amber-500/30 bg-amber-950/20 shadow cursor-pointer hover:border-amber-400 transition" onclick="aplicarFiltroSLA('PROXIMO_VENCER')">
-          <span class="text-amber-400 text-xs block">Próximo de Vencer (2h-4h)</span>
+          <span class="text-amber-400 text-xs block font-medium">Próximo de Vencer (2h-4h)</span>
           <span id="kpi-proximo-vencer" class="text-2xl font-bold text-amber-400">0</span>
         </div>
 
         <!-- 3. Fora do Prazo (> 4h) -->
         <div class="bg-slate-800 p-4 rounded-xl border border-red-500/30 bg-red-950/20 shadow cursor-pointer hover:border-red-400 transition" onclick="aplicarFiltroSLA('FORA_PRAZO')">
-          <span class="text-red-400 text-xs block">Fora do Prazo (> 4h)</span>
+          <span class="text-red-400 text-xs block font-medium">Fora do Prazo (> 4h)</span>
           <span id="kpi-fora-prazo" class="text-2xl font-bold text-red-400">0</span>
         </div>
 
         <!-- 4. GMG Acoplado -->
         <div class="bg-slate-800 p-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 shadow cursor-pointer hover:border-emerald-400 transition" onclick="aplicarFiltroGMG('SIM')">
-          <span class="text-emerald-400 text-xs block">GMG Acoplado</span>
+          <span class="text-emerald-400 text-xs block font-medium">GMG Acoplado</span>
           <span id="kpi-gmg" class="text-2xl font-bold text-emerald-400">0</span>
         </div>
 
         <!-- 5. Escalonamentos -->
         <div class="bg-slate-800 p-4 rounded-xl border border-purple-500/30 bg-purple-950/20 shadow cursor-pointer hover:border-purple-400 transition" onclick="aplicarFiltroEscalonamento('TODOS')">
-          <span class="text-slate-400 text-xs block">Escalonados (Sup/Coord/Ger)</span>
+          <span class="text-slate-400 text-xs block font-medium">Escalonados (Sup/Coord/Ger)</span>
           <span id="kpi-escalonados" class="text-2xl font-bold text-purple-400">0</span>
         </div>
 
@@ -86,16 +86,16 @@
     <div class="space-y-4 pt-4 border-t border-slate-800">
       <h2 class="text-lg font-bold text-slate-200">📋 Tabela Operacional de Tratativas</h2>
 
-      <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col space-y-3">
+      <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col space-y-3 shadow">
         
         <!-- Linha 1 de Filtros: Status Base & SLA -->
         <div class="flex flex-wrap items-center justify-between gap-3">
           <!-- Filtro Status Validação -->
           <div class="flex flex-wrap gap-2">
-            <button onclick="filtrarStatus('TODOS')" id="btn-TODOS" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white">Todos</button>
-            <button onclick="filtrarStatus('NOVO TA')" id="btn-NOVO TA" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Novos TAs</button>
-            <button onclick="filtrarStatus('BASE ANTERIOR')" id="btn-BASE ANTERIOR" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Base Anterior</button>
-            <button onclick="filtrarStatus('TRAMITADO')" id="btn-TRAMITADO" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Tramitados</button>
+            <button onclick="filtrarStatus('TODOS')" id="btn-TODOS" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow">Todos</button>
+            <button onclick="filtrarStatus('NOVO TA')" id="btn-NOVO TA" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition">Novos TAs</button>
+            <button onclick="filtrarStatus('BASE ANTERIOR')" id="btn-BASE ANTERIOR" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition">Base Anterior</button>
+            <button onclick="filtrarStatus('TRAMITADO')" id="btn-TRAMITADO" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition">Tramitados</button>
           </div>
 
           <!-- Filtro de SLA / Tempo Limite -->
@@ -181,8 +181,8 @@
       <h3 class="text-lg font-bold text-white">Inserir Tratativa - TA <span id="modal-ta-id" class="text-blue-400"></span></h3>
       <textarea id="modal-texto" rows="4" placeholder="Ex: Técnico em tratativas, deslocamento de 1:30h, sem mão de obra..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500"></textarea>
       <div class="flex justify-end gap-3">
-        <button onclick="fecharModal()" class="px-4 py-2 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300">Cancelar</button>
-        <button onclick="salvarHistorico()" class="px-4 py-2 text-xs bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium">Salvar Histórico</button>
+        <button onclick="fecharModal()" class="px-4 py-2 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300 transition">Cancelar</button>
+        <button onclick="salvarHistorico()" class="px-4 py-2 text-xs bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium transition shadow">Salvar Histórico</button>
       </div>
     </div>
   </div>
@@ -199,9 +199,9 @@
 
     async function carregarDados() {
       try {
-        // Usa redirect: "follow" e interpreta como texto antes do JSON.parse para evitar bloqueios de CORS/Redirecionamento do Apps Script
         const resp = await fetch(WEB_APP_URL, {
           method: "GET",
+          mode: "cors",
           redirect: "follow"
         });
         
@@ -217,17 +217,46 @@
         }
       } catch (err) {
         console.error("Detalhes do erro:", err);
-        alert("Erro ao conectar com o Google Script.\n\nVerifique no Apps Script:\n1. Se a aba exata se chama 'TAs Online - Análise'\n2. Se criou uma 'Nova Versão' ao implantar o script.");
+        alert("Erro de conexão com o Web App Google.\n\nVerifique se o script foi implantado como 'Qualquer pessoa' no Google Apps Script.");
       }
     }
 
+    // Helper para converter ISO Strings do Google Sheets ou HH:MM:SS para segundos
     function tempoParaSegundos(tempoStr) {
-      if (!tempoStr || typeof tempoStr !== 'string') return 0;
-      const partes = tempoStr.split(':').map(Number);
-      if (partes.length === 3) {
-        return partes[0] * 3600 + partes[1] * 60 + partes[2];
+      if (!tempoStr) return 0;
+
+      // Se vier no formato ISO do Google Sheets (ex: 1899-12-31T19:39:42.000Z)
+      if (typeof tempoStr === 'string' && tempoStr.includes('T')) {
+        const d = new Date(tempoStr);
+        if (!isNaN(d.getTime())) {
+          return d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds();
+        }
       }
+
+      // Se vier no formato texto padrão (ex: "16:33:14")
+      if (typeof tempoStr === 'string' && tempoStr.includes(':')) {
+        const partes = tempoStr.split(':').map(Number);
+        if (partes.length === 3) {
+          return partes[0] * 3600 + partes[1] * 60 + partes[2];
+        }
+      }
+
       return 0;
+    }
+
+    // Formata objeto ISO do Google Sheets para formato HH:MM:SS de exibição
+    function formatarTempoExibicao(tempoStr) {
+      if (!tempoStr) return '-';
+      if (typeof tempoStr === 'string' && tempoStr.includes('T')) {
+        const d = new Date(tempoStr);
+        if (!isNaN(d.getTime())) {
+          const h = String(d.getUTCHours()).padStart(2, '0');
+          const m = String(d.getUTCMinutes()).padStart(2, '0');
+          const s = String(d.getUTCSeconds()).padStart(2, '0');
+          return `${h}:${m}:${s}`;
+        }
+      }
+      return tempoStr;
     }
 
     function atualizarDashboard() {
@@ -398,6 +427,8 @@
         if (segs >= 7200 && segs <= 14400) tempoColor = "text-amber-400 font-bold";
         if (segs > 14400) tempoColor = "text-red-400 font-bold";
 
+        const tempoFormatado = formatarTempoExibicao(item["Tempo Total"]);
+
         let escBadges = [];
         if (String(item["Esc. Supervisão"]).toUpperCase() === "SIM") escBadges.push('<span class="bg-purple-500/20 text-purple-300 text-[10px] px-1.5 py-0.5 rounded border border-purple-500/30">Sup</span>');
         if (String(item["Esc. Coordenação"]).toUpperCase() === "SIM") escBadges.push('<span class="bg-pink-500/20 text-pink-300 text-[10px] px-1.5 py-0.5 rounded border border-pink-500/30">Coord</span>');
@@ -408,7 +439,7 @@
             <td class="p-3"><span class="px-2 py-0.5 text-[11px] font-semibold rounded-full border ${badgeColor}">${val}</span></td>
             <td class="p-3 font-mono font-bold text-white">${item.TA}</td>
             <td class="p-3">${item.DDD || '-'}</td>
-            <td class="p-3 font-mono ${tempoColor}">${item["Tempo Total"] || '-'}</td>
+            <td class="p-3 font-mono ${tempoColor}">${tempoFormatado}</td>
             <td class="p-3">${badgeGMG}</td>
             <td class="p-3"><div class="flex gap-1">${escBadges.length > 0 ? escBadges.join('') : '<span class="text-slate-500 text-xs">-</span>'}</div></td>
             <td class="p-3">${item.Coordenador || '-'} <br><span class="text-xs text-slate-500">${item.SITE || '-'}</span></td>
@@ -444,8 +475,8 @@
       ["TODOS", "NOVO TA", "BASE ANTERIOR", "TRAMITADO"].forEach(st => {
         const btn = document.getElementById(`btn-${st}`);
         btn.className = (st === status) 
-          ? "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white"
-          : "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600";
+          ? "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow"
+          : "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition";
       });
       renderizarTabela();
     }
@@ -466,7 +497,6 @@
       if (!texto) return alert("Digite o histórico!");
 
       try {
-        // Envia como text/plain;charset=utf-8 para evitar requisições pre-flight OPTIONS bloqueadas pelo Apps Script
         const resp = await fetch(WEB_APP_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
