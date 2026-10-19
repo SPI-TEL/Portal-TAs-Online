@@ -24,7 +24,7 @@
       </button>
     </div>
 
-    <!-- PAINEL GERENCIAL / CARDS DE INDICADORES -->
+    <!-- PAINEL GERENCIAL / CARDS DE INDICADORES (KPIs) -->
     <div class="space-y-4">
       <h2 class="text-lg font-bold text-slate-200 flex items-center gap-2">
         📊 Resumo de TAs na Base Ativa
@@ -188,8 +188,8 @@
   </div>
 
   <script>
-    // Cole aqui a URL do Web App gerado após a implantação do Google Apps Script
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzb5w8g5-1em1r3RcRj4RahJBDuUfV2EcaTmm-zeA0izR7i_kCoi8J4Iwn9MbSEOCvK/exec";
+    // URL do Web App configurada
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfyczyb5w8g5-1em1r3RcRj4RahJBDuUfV2EcaTmm-zeA0izR7i_kCoi8J4Iwn9MbSEOCvK/exec";
 
     let todosDados = [];
     let statusFiltroAtual = "TODOS";
@@ -198,29 +198,28 @@
     let chartEscalonamentoInstance = null;
 
     async function carregarDados() {
-  try {
-    const resp = await fetch(WEB_APP_URL, {
-      method: "GET",
-      redirect: "follow"
-    });
-    
-    if (!resp.ok) {
-      throw new Error(`HTTP error! status: ${resp.status}`);
-    }
+      try {
+        // Usa redirect: "follow" e interpreta como texto antes do JSON.parse para evitar bloqueios de CORS/Redirecionamento do Apps Script
+        const resp = await fetch(WEB_APP_URL, {
+          method: "GET",
+          redirect: "follow"
+        });
+        
+        const text = await resp.text();
+        const json = JSON.parse(text);
 
-    const json = await resp.json();
-    if (json.status === "success") {
-      todosDados = json.data;
-      atualizarDashboard();
-      renderizarTabela();
-    } else {
-      alert("Erro retornado pelo Apps Script: " + json.message);
+        if (json.status === "success") {
+          todosDados = json.data;
+          atualizarDashboard();
+          renderizarTabela();
+        } else {
+          alert("Erro na planilha: " + json.message);
+        }
+      } catch (err) {
+        console.error("Detalhes do erro:", err);
+        alert("Erro ao conectar com o Google Script.\n\nVerifique no Apps Script:\n1. Se a aba exata se chama 'TAs Online - Análise'\n2. Se criou uma 'Nova Versão' ao implantar o script.");
+      }
     }
-  } catch (err) {
-    console.error("Erro na requisição:", err);
-    alert("Erro ao carregar dados. Verifique:\n1. Se a URL do Apps Script está correta no index.html\n2. Se o acesso está configurado como 'Qualquer pessoa'.");
-  }
-}
 
     function tempoParaSegundos(tempoStr) {
       if (!tempoStr || typeof tempoStr !== 'string') return 0;
@@ -244,7 +243,6 @@
       tasAtivos.forEach(i => {
         const segs = tempoParaSegundos(i["Tempo Total"]);
         
-        // Próximo de vencer ajustado para faixa de 2 horas até 4 horas
         if (segs >= 7200 && segs <= 14400) proximoVencer++;
         if (segs > 14400) foraPrazo++;
 
@@ -423,7 +421,7 @@
       }).join('');
     }
 
-    // Helpers para aplicar filtros ao clicar nos Cards
+    // Helpers para aplicar filtros ao clicar nos Cards KPI
     function aplicarFiltroSLA(valor) {
       if (valor === 'TODOS_SLA') document.getElementById("filtro-sla").value = "TODOS";
       if (valor === 'PROXIMO_VENCER') document.getElementById("filtro-sla").value = "PROXIMO_VENCER";
@@ -468,22 +466,28 @@
       if (!texto) return alert("Digite o histórico!");
 
       try {
+        // Envia como text/plain;charset=utf-8 para evitar requisições pre-flight OPTIONS bloqueadas pelo Apps Script
         const resp = await fetch(WEB_APP_URL, {
           method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ ta: taSelecionado, novoHistorico: texto })
         });
-        const res = await resp.json();
+        
+        const text = await resp.text();
+        const res = JSON.parse(text);
+
         if (res.status === "success") {
           fecharModal();
           carregarDados();
         } else {
-          alert("Erro: " + res.message);
+          alert("Erro ao salvar: " + res.message);
         }
       } catch (err) {
-        alert("Erro ao salvar histórico.");
+        alert("Erro ao salvar histórico via API.");
       }
     }
 
+    // Inicialização ao carregar a página
     carregarDados();
   </script>
 </body>
