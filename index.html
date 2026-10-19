@@ -198,18 +198,29 @@
     let chartEscalonamentoInstance = null;
 
     async function carregarDados() {
-      try {
-        const resp = await fetch(WEB_APP_URL);
-        const json = await resp.json();
-        if (json.status === "success") {
-          todosDados = json.data;
-          atualizarDashboard();
-          renderizarTabela();
-        }
-      } catch (err) {
-        alert("Erro ao carregar dados. Verifique a URL do App Web.");
-      }
+  try {
+    const resp = await fetch(WEB_APP_URL, {
+      method: "GET",
+      redirect: "follow"
+    });
+    
+    if (!resp.ok) {
+      throw new Error(`HTTP error! status: ${resp.status}`);
     }
+
+    const json = await resp.json();
+    if (json.status === "success") {
+      todosDados = json.data;
+      atualizarDashboard();
+      renderizarTabela();
+    } else {
+      alert("Erro retornado pelo Apps Script: " + json.message);
+    }
+  } catch (err) {
+    console.error("Erro na requisição:", err);
+    alert("Erro ao carregar dados. Verifique:\n1. Se a URL do Apps Script está correta no index.html\n2. Se o acesso está configurado como 'Qualquer pessoa'.");
+  }
+}
 
     function tempoParaSegundos(tempoStr) {
       if (!tempoStr || typeof tempoStr !== 'string') return 0;
