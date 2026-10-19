@@ -13,7 +13,7 @@
 
   <div class="max-w-7xl mx-auto space-y-6">
     
-    <!-- Header -->
+    <!-- 1. Header -->
     <div class="flex flex-col md:flex-row justify-between items-center bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
       <div>
         <h1 class="text-2xl font-bold text-white">Painel Operacional e Gerencial de TAs</h1>
@@ -24,7 +24,7 @@
       </button>
     </div>
 
-    <!-- PAINEL GERENCIAL / CARDS DE INDICADORES (KPIs) -->
+    <!-- 2. PAINEL GERENCIAL / CARDS DE INDICADORES (KPIs) -->
     <div class="space-y-4">
       <h2 class="text-lg font-bold text-slate-200 flex items-center gap-2">
         📊 Resumo Executivo (Base Ativa)
@@ -33,31 +33,31 @@
       <!-- Grid de Indicadores -->
       <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
         
-        <!-- 1. Total TAs Ativos -->
+        <!-- Total TAs Ativos -->
         <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow cursor-pointer hover:border-slate-500 transition" onclick="aplicarFiltroSLA('TODOS_SLA')">
           <span class="text-slate-400 text-xs block font-medium">Total TAs (Base Ativa)</span>
           <span id="kpi-total-ativos" class="text-2xl font-bold text-white">0</span>
         </div>
 
-        <!-- 2. Próximo de Vencer (2h a 4h) -->
+        <!-- Próximo de Vencer (2h a 4h) -->
         <div class="bg-slate-800 p-4 rounded-xl border border-amber-500/30 bg-amber-950/20 shadow cursor-pointer hover:border-amber-400 transition" onclick="aplicarFiltroSLA('PROXIMO_VENCER')">
           <span class="text-amber-400 text-xs block font-medium">Próximo de Vencer (2h-4h)</span>
           <span id="kpi-proximo-vencer" class="text-2xl font-bold text-amber-400">0</span>
         </div>
 
-        <!-- 3. Fora do Prazo (> 4h) -->
+        <!-- Fora do Prazo (> 4h) -->
         <div class="bg-slate-800 p-4 rounded-xl border border-red-500/30 bg-red-950/20 shadow cursor-pointer hover:border-red-400 transition" onclick="aplicarFiltroSLA('FORA_PRAZO')">
           <span class="text-red-400 text-xs block font-medium">Fora do Prazo (> 4h)</span>
           <span id="kpi-fora-prazo" class="text-2xl font-bold text-red-400">0</span>
         </div>
 
-        <!-- 4. GMG Acoplado -->
+        <!-- GMG Acoplado -->
         <div class="bg-slate-800 p-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 shadow cursor-pointer hover:border-emerald-400 transition" onclick="aplicarFiltroGMG('SIM')">
           <span class="text-emerald-400 text-xs block font-medium">GMG Acoplado</span>
           <span id="kpi-gmg" class="text-2xl font-bold text-emerald-400">0</span>
         </div>
 
-        <!-- 5. Escalonamentos -->
+        <!-- Escalonamentos -->
         <div class="bg-slate-800 p-4 rounded-xl border border-purple-500/30 bg-purple-950/20 shadow cursor-pointer hover:border-purple-400 transition" onclick="aplicarFiltroEscalonamento('TODOS')">
           <span class="text-slate-400 text-xs block font-medium">Escalonados (Sup/Coord/Ger)</span>
           <span id="kpi-escalonados" class="text-2xl font-bold text-purple-400">0</span>
@@ -65,7 +65,7 @@
 
       </div>
 
-      <!-- Gráficos Gerenciais -->
+      <!-- 3. Gráficos Gerenciais (Chart.js) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow">
           <h3 class="text-sm font-semibold text-slate-300 mb-3">Distribuição por DDD (Ativos)</h3>
@@ -82,7 +82,7 @@
       </div>
     </div>
 
-    <!-- FILTROS E TABELA OPERACIONAL -->
+    <!-- 4. FILTROS E TABELA OPERACIONAL -->
     <div class="space-y-4 pt-4 border-t border-slate-800">
       <h2 class="text-lg font-bold text-slate-200">📋 Tabela Operacional de Tratativas</h2>
 
@@ -148,7 +148,7 @@
 
       </div>
 
-      <!-- Tabela -->
+      <!-- 5. Tabela de TAs -->
       <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-x-auto shadow-lg">
         <table class="w-full text-left text-sm text-slate-300">
           <thead class="bg-slate-900 text-slate-400 border-b border-slate-700 uppercase text-xs">
@@ -175,7 +175,7 @@
 
   </div>
 
-  <!-- Modal Adicionar Histórico -->
+  <!-- 6. Modal Adicionar Histórico -->
   <div id="modal-historico" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center p-4 z-50">
     <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
       <h3 class="text-lg font-bold text-white">Inserir Tratativa - TA <span id="modal-ta-id" class="text-blue-400"></span></h3>
@@ -197,17 +197,10 @@
     let chartDDDInstance = null;
     let chartEscalonamentoInstance = null;
 
-    async function carregarDados() {
-      try {
-        const resp = await fetch(WEB_APP_URL, {
-          method: "GET",
-          mode: "cors",
-          redirect: "follow"
-        });
-        
-        const text = await resp.text();
-        const json = JSON.parse(text);
-
+    // 7. Requisição GET via JSONP para contornar restrições CORS no Google Workspace
+    function carregarDados() {
+      // Define a função de callback global esperada pelo JSONP
+      window.processarDadosGoogle = function(json) {
         if (json.status === "success") {
           todosDados = json.data;
           atualizarDashboard();
@@ -215,17 +208,32 @@
         } else {
           alert("Erro na planilha: " + json.message);
         }
-      } catch (err) {
-        console.error("Detalhes do erro:", err);
-        alert("Erro de conexão com o Web App Google.\n\nVerifique se o script foi implantado como 'Qualquer pessoa' no Google Apps Script.");
-      }
+        
+        // Remove a tag de script temporária
+        const scriptAntigo = document.getElementById("jsonp-trigger");
+        if (scriptAntigo) scriptAntigo.remove();
+      };
+
+      // Limpa qualquer requisição pendente
+      const scriptExistente = document.getElementById("jsonp-trigger");
+      if (scriptExistente) scriptExistente.remove();
+
+      // Injeta dynamic script tag
+      const script = document.createElement("script");
+      script.id = "jsonp-trigger";
+      script.src = `${WEB_APP_URL}?callback=processarDadosGoogle&_=${new Date().getTime()}`;
+      
+      script.onerror = function() {
+        alert("Erro de conexão ao carregar dados do Web App Google.\n\nVerifique se o script foi implantado com permissão para 'Qualquer pessoa'.");
+      };
+
+      document.body.appendChild(script);
     }
 
-    // Helper para converter ISO Strings do Google Sheets ou HH:MM:SS para segundos
+    // Convertidor de datas ISO (ex: "1899-12-31T19:39:42.000Z") e strings HH:MM:SS para segundos
     function tempoParaSegundos(tempoStr) {
       if (!tempoStr) return 0;
 
-      // Se vier no formato ISO do Google Sheets (ex: 1899-12-31T19:39:42.000Z)
       if (typeof tempoStr === 'string' && tempoStr.includes('T')) {
         const d = new Date(tempoStr);
         if (!isNaN(d.getTime())) {
@@ -233,7 +241,6 @@
         }
       }
 
-      // Se vier no formato texto padrão (ex: "16:33:14")
       if (typeof tempoStr === 'string' && tempoStr.includes(':')) {
         const partes = tempoStr.split(':').map(Number);
         if (partes.length === 3) {
@@ -244,7 +251,7 @@
       return 0;
     }
 
-    // Formata objeto ISO do Google Sheets para formato HH:MM:SS de exibição
+    // Formata objeto ISO do Google Sheets para formato HH:MM:SS limpo de exibição
     function formatarTempoExibicao(tempoStr) {
       if (!tempoStr) return '-';
       if (typeof tempoStr === 'string' && tempoStr.includes('T')) {
@@ -260,12 +267,12 @@
     }
 
     function atualizarDashboard() {
-      // Filtrar apenas TAs Ativos (desconsiderando Tramitados)
+      // Considera apenas a Base Ativa (exclui TRAMITADOS das métricas ativas)
       const tasAtivos = todosDados.filter(i => (i["Validação"] || "NOVO TA") !== "TRAMITADO");
       
       const totalAtivos = tasAtivos.length;
       let proximoVencer = 0; // Entre 2h (7200s) e 4h (14400s)
-      let foraPrazo = 0;     // Acima de 4h (> 14400s)
+      let foraPrazo = 0;     // Maior que 4h (> 14400s)
       let gmgCount = 0;
       let countEsc = 0;
 
@@ -291,7 +298,7 @@
       document.getElementById("kpi-gmg").innerText = gmgCount;
       document.getElementById("kpi-escalonados").innerText = countEsc;
 
-      // Gráfico DDD
+      // Gráfico por DDD
       const dddCounts = {};
       tasAtivos.forEach(i => {
         const ddd = i.DDD ? `DDD ${i.DDD}` : 'Outros';
@@ -299,7 +306,7 @@
       });
       renderGraficoDDD(dddCounts);
 
-      // Gráfico Escalonamento
+      // Gráfico por Escalonamento de Liderança
       let sup = 0, coord = 0, ger = 0;
       tasAtivos.forEach(i => {
         if (String(i["Esc. Supervisão"]).toUpperCase() === "SIM") sup++;
@@ -369,11 +376,11 @@
         const validacao = item["Validação"] || "NOVO TA";
         const bateStatus = (statusFiltroAtual === "TODOS") || (validacao === statusFiltroAtual);
         
-        // Rede
+        // Tipo de Rede
         const tipoRede = item["TIpo Rede"] || item["Tipo Rede"] || "";
         const bateRede = (filtroRede === "TODAS") || (tipoRede.toLowerCase() === filtroRede.toLowerCase());
 
-        // GMG
+        // GMG Acoplado
         const gmgVal = String(item["GMG Acoplado?"] || item["GMG Acoplado"] || "").toUpperCase();
         let bateGMG = true;
         if (filtroGMG === "SIM") bateGMG = (gmgVal === "SIM");
@@ -398,7 +405,7 @@
         if (filtroEscalonamento === "GERENTE") bateEsc = isGer;
         if (filtroEscalonamento === "SEM_ESCALONAMENTO") bateEsc = (!isSup && !isCoord && !isGer);
 
-        // Busca Geral
+        // Busca Geral em texto
         const textoBusca = `${item.TA} ${item.Coordenador} ${item.Localidade} ${item.SITE}`.toLowerCase();
         const bateBusca = textoBusca.includes(busca);
 
@@ -421,7 +428,7 @@
           ? '<span class="px-2 py-0.5 text-xs font-semibold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">SIM</span>'
           : '<span class="text-slate-500 text-xs">NÃO</span>';
 
-        // Estilo e cálculo do Tempo
+        // Cores de tempo por SLA
         const segs = tempoParaSegundos(item["Tempo Total"]);
         let tempoColor = "text-slate-200";
         if (segs >= 7200 && segs <= 14400) tempoColor = "text-amber-400 font-bold";
@@ -452,7 +459,7 @@
       }).join('');
     }
 
-    // Helpers para aplicar filtros ao clicar nos Cards KPI
+    // Handlers para ações rápidas nos Cards KPI
     function aplicarFiltroSLA(valor) {
       if (valor === 'TODOS_SLA') document.getElementById("filtro-sla").value = "TODOS";
       if (valor === 'PROXIMO_VENCER') document.getElementById("filtro-sla").value = "PROXIMO_VENCER";
@@ -492,6 +499,7 @@
       document.getElementById("modal-historico").classList.add("hidden");
     }
 
+    // POST via text/plain para envio de novo Histórico
     async function salvarHistorico() {
       const texto = document.getElementById("modal-texto").value;
       if (!texto) return alert("Digite o histórico!");
@@ -517,8 +525,22 @@
       }
     }
 
-    // Inicialização ao carregar a página
+    // Inicializa a chamada dos dados ao abrir a página
     carregarDados();
   </script>
 </body>
 </html>
+```
+
+---
+
+### Resumo das Soluções Aplicadas:
+
+1. **Bypass Definitivo de CORS via JSONP:**
+   - A função `carregarDados()` cria dinamicamente uma tag `<script>` apontando para `${WEB_APP_URL}?callback=processarDadosGoogle...`.
+   - O navegador descarrega o payload JSON do Google Workspace diretamente como script executável sem ser bloqueado pelas políticas de origem cruzada (CORS) do GitHub Pages.
+2. **Normalização de timestamps ISO do Google Sheets:**
+   - `tempoParaSegundos()` e `formatarTempoExibicao()` extraem as horas reais (`HH:MM:SS`) de objetos de data como `1899-12-31T19:39:42.000Z`.
+3. **Painel Interativo:**
+   - Clicar nos KPIs filtra a tabela diretamente.
+   - Suporte completo a filtros de GMG, Escalonamento (Supervisão/Coordenação/Gerência), SLA (2h-4h e >4h) e busca rápida.
