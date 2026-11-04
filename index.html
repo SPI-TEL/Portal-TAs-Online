@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Ordens de Serviço - Vivo / TEL</title>
+  <title>Controle de Ordens de Servico - Vivo / TEL</title>
   
-  <!-- META TAGS ANTI-CACHE (Evita que o telemóvel fique travado na versão antiga) -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   
-  <!-- CSS Bootstrap & Ícones -->
+  <!-- CSS Bootstrap & Icones -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   
@@ -22,7 +21,6 @@
   <style>
     body { background-color: #f4f6f9; font-size: 0.85rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
     
-    /* CABEÇALHO PADRONIZADO (DARK MODERN) */
     .header-painel {
       background-color: #0b1325;
       color: #ffffff;
@@ -96,7 +94,6 @@
     .btn-header-excel { background-color: #1b63ff; border: 1px solid #1b63ff; color: #ffffff; }
     .btn-header-excel:hover { background-color: #0f4ee6; color: #ffffff; }
 
-    /* CARDS COMPACTOS COM MENOR ALTURA E FONTE MENOR */
     .card-kpi { 
       border: none; 
       border-radius: 8px; 
@@ -119,7 +116,6 @@
       margin-top: 3px !important;
     }
 
-    /* FILTROS COMPACTOS E ESTREITOS */
     .card-filtros {
       border: none;
       border-radius: 8px;
@@ -146,11 +142,9 @@
       border-radius: 6px;
     }
 
-    /* BADGES SLA E STATUS */
     .badge-vencendo { background-color: #ffc107; color: #000; font-weight: bold; }
     .badge-fora { background-color: #dc3545; color: #fff; font-weight: bold; }
     
-    /* NO PRAZO: SEM FUNDO CINZENTO, APENAS LETRA VERDE ESCURO */
     .badge-no-prazo {
       background: transparent !important;
       color: #0f5132 !important;
@@ -160,7 +154,6 @@
       padding: 0;
     }
 
-    /* PENDENTE: EM CINZENTO */
     .badge-status-pendente {
       background-color: #6c757d !important;
       color: #ffffff !important;
@@ -170,7 +163,6 @@
     .table td, .table th { vertical-align: middle; }
     .obs-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* CONTAINERS DE GRÁFICOS */
     .chart-container-card {
       background: #ffffff;
       border-radius: 10px;
@@ -180,7 +172,6 @@
       height: 100%;
     }
 
-    /* PAGINAÇÃO */
     .pagination .page-link {
       color: #0b1325;
       font-size: 0.8rem;
@@ -212,7 +203,7 @@
           <div class="header-title">
             CONTROLE DE ORDENS DE SERVIÇO
           </div>
-          <p class="header-subtitle">Contrato Vivo / TEL • Acompanhamento Operacional, SLA & Eficiência em Tempo Real</p>
+          <p class="header-subtitle">Contrato Vivo / TEL • Acompanhamento Operacional, SLA &amp; Eficiência em Tempo Real</p>
         </div>
       </div>
 
@@ -289,7 +280,7 @@
       </div>
     </div>
 
-    <!-- FILTROS COMPACTOS (ALTURA REDUZIDA E LABELS APROXIMADOS) -->
+    <!-- FILTROS COMPACTOS -->
     <div class="card card-filtros bg-white">
       <div class="row g-2 align-items-end">
         <div class="col-md-2">
@@ -319,7 +310,7 @@
       </div>
     </div>
 
-    <!-- SEÇÃO DE GRÁFICOS NA MESMA LINHA -->
+    <!-- GRÁFICOS LADO A LADO -->
     <div class="row g-3 mb-3 chart-row">
       <div class="col-lg-7">
         <div class="chart-container-card">
@@ -370,7 +361,6 @@
         </table>
       </div>
 
-      <!-- BARRA DE PAGINAÇÃO INFERIOR -->
       <div class="card-footer card-footer-paginacao bg-light d-flex flex-wrap justify-content-between align-items-center p-3 border-top">
         <div id="txt-info-paginacao" class="small text-muted mb-2 mb-md-0">
           Mostrando 0 até 0 de 0 TAs
@@ -467,7 +457,6 @@
         .replace(/gerÃƒÂ¢ncia|gerÃ¢ncia/g, "gerência");
     }
 
-    // < 2h: PRETO | >= 2h: VERMELHO
     function obterEstiloTempoGestor(tempoStr) {
       if (!tempoStr) return 'color: #111827; font-weight: 600;';
       const partes = String(tempoStr).trim().split(':');
@@ -510,7 +499,6 @@
             const siteLimpo = (r["SITE"] || "").trim();
             let tipoRedePlanilha = (r["TIpo Rede"] || r["Tipo Rede"] || r["Tipo de Rede"] || r["Rede"] || "").trim();
 
-            // REGRA: 2 caracteres = FIXA | 3 caracteres = Móvel
             if (!tipoRedePlanilha) {
               if (siteLimpo.length === 2) {
                 tipoRedePlanilha = "FIXA";
@@ -606,7 +594,6 @@
         return atendeDdd && atendePrio && atendeSla && atendeRede && atendeStatusOp && atendeBusca;
       });
 
-      // Cards
       document.getElementById('card-total').innerText = dadosFiltradosAtuais.length;
       document.getElementById('card-vencendo').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('VENCENDO')).length;
       document.getElementById('card-fora').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length;
@@ -621,7 +608,6 @@
       renderizarGraficoDdd(dadosFiltradosAtuais);
       renderizarGraficoPrioridades(dadosFiltradosAtuais);
 
-      // Paginação
       const totalRegistros = dadosFiltradosAtuais.length;
       const totalPaginas = Math.ceil(totalRegistros / ITENS_POR_PAGINA) || 1;
 
@@ -643,7 +629,6 @@
       tbody.innerHTML = '';
 
       dadosPagina.forEach(d => {
-        // SLA: "NO PRAZO" SEM FUNDO E COM LETRA VERDE ESCURO
         let slaBadgeClass = 'badge bg-secondary';
         const sla = (d.status_sla || '').toUpperCase();
         if (sla.includes('VENCENDO')) {
@@ -654,7 +639,6 @@
           slaBadgeClass = 'badge-no-prazo';
         }
 
-        // STATUS: PENDENTE EM CINZENTO
         let statusBadgeClass = 'badge bg-info text-dark';
         const statusAtual = (d.status_atendimento || '').trim();
 
@@ -843,7 +827,6 @@
               ctx.save();
               ctx.font = 'bold 11px sans-serif';
 
-              // Rótulo % na base interna
               ctx.fillStyle = '#ffffff';
               ctx.textAlign = 'left';
               ctx.textBaseline = 'middle';
@@ -851,7 +834,6 @@
                 ctx.fillText(pct, bar.base + 8, bar.y);
               }
 
-              // Rótulo Volume na ponta externa
               ctx.fillStyle = '#212529';
               ctx.textAlign = 'left';
               ctx.fillText(`${val} TAs`, bar.x + 6, bar.y);
