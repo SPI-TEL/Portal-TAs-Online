@@ -3,544 +3,584 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal de TAs - SPI Online</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js para Gráficos -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-6">
+  <title>Controle de Ordens de Serviço - Vivo / TEL</title>
+  
+  <!-- CSS Bootstrap & Ícones -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  
+  <!-- Scripts para Leitura CSV e Exportação Excel (.xlsx) -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <div class="max-w-7xl mx-auto space-y-6">
+  <style>
+    body { background-color: #f4f6f9; font-size: 0.85rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
     
-    <!-- 1. Header -->
-    <div class="flex flex-col md:flex-row justify-between items-center bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
-      <div>
-        <h1 class="text-2xl font-bold text-white">Painel Operacional e Gerencial de TAs</h1>
-        <p class="text-slate-400 text-sm">Monitoramento de SLAs, GMG e histórico de tratativas em tempo real</p>
+    /* CABEÇALHO PADRONIZADO (DARK MODERN) */
+    .header-painel {
+      background-color: #0b1325;
+      color: #ffffff;
+      border-radius: 14px;
+      padding: 16px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+    .header-icon-box {
+      background-color: #0d2238;
+      border: 1px solid #16385c;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #0dcaf0;
+    }
+    .header-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      margin-bottom: 2px;
+    }
+    .badge-sheets-live {
+      background-color: rgba(13, 202, 240, 0.15);
+      color: #0dcaf0;
+      border: 1px solid rgba(13, 202, 240, 0.35);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+    .header-subtitle {
+      color: #8da2be;
+      font-size: 0.82rem;
+      margin: 0;
+    }
+    .sync-info {
+      text-align: right;
+      padding-right: 18px;
+      border-right: 1px solid #1f2f47;
+    }
+    .sync-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #7b8fa7;
+      letter-spacing: 0.6px;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+    .sync-time {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      letter-spacing: 1px;
+    }
+    .btn-header {
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-header-sync {
+      background-color: #00965e;
+      border: 1px solid #00965e;
+      color: #ffffff;
+    }
+    .btn-header-sync:hover {
+      background-color: #007a4d;
+      color: #ffffff;
+    }
+    .btn-header-report {
+      background-color: #172338;
+      border: 1px solid #283953;
+      color: #d1dbe7;
+    }
+    .btn-header-report:hover {
+      background-color: #202f49;
+      color: #ffffff;
+    }
+    .btn-header-excel {
+      background-color: #1b63ff;
+      border: 1px solid #1b63ff;
+      color: #ffffff;
+    }
+    .btn-header-excel:hover {
+      background-color: #0f4ee6;
+      color: #ffffff;
+    }
+
+    /* CARDS & TABELA */
+    .card-kpi { border: none; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .badge-vencendo { background-color: #ffc107; color: #000; font-weight: bold; }
+    .badge-fora { background-color: #dc3545; color: #fff; font-weight: bold; }
+    .badge-dentro { background-color: #198754; color: #fff; }
+    .table td, .table th { vertical-align: middle; }
+    .obs-cell { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ESTILO PARA IMPRESSÃO (PDF) */
+    @media print {
+      body { background-color: #fff; font-size: 10pt; }
+      .header-painel, .btn, .modal, .card-kpi, .card-filtros { display: none !important; }
+      .table { width: 100% !important; }
+    }
+  </style>
+</head>
+<body class="p-3">
+  <div class="container-fluid">
+    
+    <!-- CABEÇALHO -->
+    <div class="header-painel d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="header-icon-box shadow-sm">
+          <i class="bi bi-clock-history"></i>
+        </div>
+        <div>
+          <div class="header-title">
+            CONTROLE DE ORDENS DE SERVIÇO
+            <span class="badge-sheets-live"><i class="bi bi-broadcast me-1"></i>Google Sheets Live • Aba Analítico</span>
+          </div>
+          <p class="header-subtitle">Contrato Vivo / TEL • Acompanhamento Operacional, SLA & Eficiência em Tempo Real</p>
+        </div>
       </div>
-      <button onclick="carregarDados()" class="mt-4 md:mt-0 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition font-medium text-sm flex items-center gap-2 shadow">
-        🔄 Atualizar Dados
-      </button>
+
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <div class="sync-info">
+          <div class="sync-label">ÚLTIMA SINCRONIZAÇÃO</div>
+          <div id="txt-ultima-sync" class="sync-time">--:--:--</div>
+        </div>
+        
+        <button class="btn btn-header btn-header-sync" onclick="carregarDados()">
+          <i class="bi bi-arrow-repeat"></i> Sincronizar
+        </button>
+        
+        <button class="btn btn-header btn-header-report" onclick="window.print()">
+          <i class="bi bi-printer"></i> Relatório / PDF
+        </button>
+        
+        <button class="btn btn-header btn-header-excel" onclick="exportarExcel()">
+          <i class="bi bi-file-earmark-excel"></i> Exportar Base (.xlsx)
+        </button>
+      </div>
     </div>
 
-    <!-- 2. PAINEL GERENCIAL / CARDS DE INDICADORES (KPIs) -->
-    <div class="space-y-4">
-      <h2 class="text-lg font-bold text-slate-200 flex items-center gap-2">
-        📊 Resumo Executivo (Base Ativa)
-      </h2>
-
-      <!-- Grid de Indicadores -->
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-        
-        <!-- Total TAs Ativos -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow cursor-pointer hover:border-slate-500 transition" onclick="aplicarFiltroSLA('TODOS_SLA')">
-          <span class="text-slate-400 text-xs block font-medium">Total TAs (Base Ativa)</span>
-          <span id="kpi-total-ativos" class="text-2xl font-bold text-white">0</span>
+    <!-- CARDS TOTALIZADORES -->
+    <div class="row g-2 mb-3">
+      <div class="col-md-2">
+        <div class="card card-kpi p-3 bg-white border-start border-primary border-4">
+          <small class="text-muted fw-bold">TOTAL TAs</small>
+          <h3 id="card-total" class="m-0 text-primary">0</h3>
         </div>
-
-        <!-- Próximo de Vencer (2h a 4h) -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-amber-500/30 bg-amber-950/20 shadow cursor-pointer hover:border-amber-400 transition" onclick="aplicarFiltroSLA('PROXIMO_VENCER')">
-          <span class="text-amber-400 text-xs block font-medium">Próximo de Vencer (2h-4h)</span>
-          <span id="kpi-proximo-vencer" class="text-2xl font-bold text-amber-400">0</span>
-        </div>
-
-        <!-- Fora do Prazo (> 4h) -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-red-500/30 bg-red-950/20 shadow cursor-pointer hover:border-red-400 transition" onclick="aplicarFiltroSLA('FORA_PRAZO')">
-          <span class="text-red-400 text-xs block font-medium">Fora do Prazo (> 4h)</span>
-          <span id="kpi-fora-prazo" class="text-2xl font-bold text-red-400">0</span>
-        </div>
-
-        <!-- GMG Acoplado -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 shadow cursor-pointer hover:border-emerald-400 transition" onclick="aplicarFiltroGMG('SIM')">
-          <span class="text-emerald-400 text-xs block font-medium">GMG Acoplado</span>
-          <span id="kpi-gmg" class="text-2xl font-bold text-emerald-400">0</span>
-        </div>
-
-        <!-- Escalonamentos -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-purple-500/30 bg-purple-950/20 shadow cursor-pointer hover:border-purple-400 transition" onclick="aplicarFiltroEscalonamento('TODOS')">
-          <span class="text-slate-400 text-xs block font-medium">Escalonados (Sup/Coord/Ger)</span>
-          <span id="kpi-escalonados" class="text-2xl font-bold text-purple-400">0</span>
-        </div>
-
       </div>
-
-      <!-- 3. Gráficos Gerenciais (Chart.js) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow">
-          <h3 class="text-sm font-semibold text-slate-300 mb-3">Distribuição por DDD (Ativos)</h3>
-          <div class="h-48">
-            <canvas id="chartDDD"></canvas>
-          </div>
+      <div class="col-md-2">
+        <div class="card card-kpi p-3 bg-white border-start border-warning border-4">
+          <small class="text-muted fw-bold">VENCENDO</small>
+          <h3 id="card-vencendo" class="m-0 text-warning">0</h3>
         </div>
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow">
-          <h3 class="text-sm font-semibold text-slate-300 mb-3">Escalonamentos de Liderança</h3>
-          <div class="h-48">
-            <canvas id="chartEscalonamento"></canvas>
-          </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card card-kpi p-3 bg-white border-start border-danger border-4">
+          <small class="text-muted fw-bold">FORA DO PRAZO</small>
+          <h3 id="card-fora" class="m-0 text-danger">0</h3>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card card-kpi p-3 bg-white border-start border-info border-4">
+          <small class="text-muted fw-bold">EM DESLOCAMENTO</small>
+          <h3 id="card-deslocamento" class="m-0 text-info">0</h3>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card card-kpi p-3 bg-white border-start border-success border-4">
+          <small class="text-muted fw-bold">GMG ACOPLADO</small>
+          <h3 id="card-gmg" class="m-0 text-success">0</h3>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card card-kpi p-3 bg-white border-start border-secondary border-4">
+          <small class="text-muted fw-bold">ANÁLISE DE MÃO DE OBRA</small>
+          <h3 id="card-mao-de-obra" class="m-0 text-secondary">0</h3>
         </div>
       </div>
     </div>
 
-    <!-- 4. FILTROS E TABELA OPERACIONAL -->
-    <div class="space-y-4 pt-4 border-t border-slate-800">
-      <h2 class="text-lg font-bold text-slate-200">📋 Tabela Operacional de Tratativas</h2>
-
-      <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col space-y-3 shadow">
-        
-        <!-- Linha 1 de Filtros: Status Base & SLA -->
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <!-- Filtro Status Validação -->
-          <div class="flex flex-wrap gap-2">
-            <button onclick="filtrarStatus('TODOS')" id="btn-TODOS" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow">Todos</button>
-            <button onclick="filtrarStatus('NOVO TA')" id="btn-NOVO TA" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition">Novos TAs</button>
-            <button onclick="filtrarStatus('BASE ANTERIOR')" id="btn-BASE ANTERIOR" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition">Base Anterior</button>
-            <button onclick="filtrarStatus('TRAMITADO')" id="btn-TRAMITADO" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition">Tramitados</button>
-          </div>
-
-          <!-- Filtro de SLA / Tempo Limite -->
-          <div class="flex items-center gap-2 w-full md:w-auto">
-            <label class="text-xs text-slate-400">SLA / Prazo:</label>
-            <select id="filtro-sla" onchange="renderizarTabela()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 w-full md:w-auto">
-              <option value="TODOS">Todos os Prazos</option>
-              <option value="NO_PRAZO">No Prazo (&lt; 2h)</option>
-              <option value="PROXIMO_VENCER">Próximo de Vencer (2h - 4h)</option>
-              <option value="FORA_PRAZO">Fora do Prazo (&gt; 4h)</option>
-            </select>
-          </div>
+    <!-- FILTROS -->
+    <div class="card card-filtros p-3 mb-3 border-0 shadow-sm bg-white">
+      <div class="row g-2">
+        <div class="col-md-2">
+          <label class="form-label small fw-bold">DDD</label>
+          <select id="filtro-ddd" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
         </div>
-
-        <!-- Linha 2 de Filtros: Escalonamento, GMG, Rede & Busca -->
-        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-700/50">
-          
-          <div class="flex flex-wrap gap-2 items-center w-full md:w-auto">
-            <!-- Filtro de Escalonamento -->
-            <select id="filtro-escalonamento" onchange="renderizarTabela()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-purple-300 focus:outline-none focus:border-purple-500">
-              <option value="TODOS">Escalonamento (Todos)</option>
-              <option value="COM_ESCALONAMENTO">Qualquer Escalonamento</option>
-              <option value="SUPERVISAO">Supervisão</option>
-              <option value="COORDENACAO">Coordenação</option>
-              <option value="GERENTE">Gerência</option>
-              <option value="SEM_ESCALONAMENTO">Sem Escalonamento</option>
-            </select>
-
-            <!-- Filtro GMG -->
-            <select id="filtro-gmg" onchange="renderizarTabela()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-emerald-300 focus:outline-none focus:border-emerald-500">
-              <option value="TODOS">GMG (Todos)</option>
-              <option value="SIM">Com GMG Acoplado</option>
-              <option value="NAO">Sem GMG</option>
-            </select>
-
-            <!-- Filtro Rede -->
-            <select id="filtro-rede" onchange="renderizarTabela()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
-              <option value="TODAS">Todas as Redes</option>
-              <option value="Móvel">Móvel</option>
-              <option value="Fixa">Fixa</option>
-            </select>
-          </div>
-
-          <!-- Input de Busca -->
-          <div class="w-full md:w-64">
-            <input type="text" id="busca" oninput="renderizarTabela()" placeholder="Buscar por TA, Site, Coordenador..." class="w-full px-4 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs focus:outline-none focus:border-blue-500">
-          </div>
-
+        <div class="col-md-2">
+          <label class="form-label small fw-bold">Prioridade</label>
+          <select id="filtro-prioridade" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todas</option></select>
         </div>
-
+        <div class="col-md-2">
+          <label class="form-label small fw-bold">Status SLA</label>
+          <select id="filtro-sla" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-bold">Status Atendimento</label>
+          <select id="filtro-status-op" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-bold">Buscar (Site / Alarme / TA)</label>
+          <input type="text" id="filtro-busca" class="form-control form-control-sm" placeholder="Digite para buscar..." onkeyup="aplicarFiltros()">
+        </div>
       </div>
+    </div>
 
-      <!-- 5. Tabela de TAs -->
-      <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-x-auto shadow-lg">
-        <table class="w-full text-left text-sm text-slate-300">
-          <thead class="bg-slate-900 text-slate-400 border-b border-slate-700 uppercase text-xs">
+    <!-- GRID -->
+    <div class="card border-0 shadow-sm bg-white">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle mb-0">
+          <thead class="table-dark small">
             <tr>
-              <th class="p-3">Validação</th>
-              <th class="p-3">TA</th>
-              <th class="p-3">DDD</th>
-              <th class="p-3">Tempo Total</th>
-              <th class="p-3">GMG Acoplado</th>
-              <th class="p-3">Escalonamentos</th>
-              <th class="p-3">Coordenador / Site</th>
-              <th class="p-3">Histórico</th>
-              <th class="p-3 text-center">Ações</th>
+              <th>Ação</th>
+              <th>TA</th>
+              <th>DDD</th>
+              <th>Prio</th>
+              <th>Localidade / SITE</th>
+              <th>Alarme</th>
+              <th>Tempo Gestor</th>
+              <th>SLA</th>
+              <th>Rede</th>
+              <th>Status Atendimento</th>
+              <th>Previsão</th>
+              <th>Observação</th>
             </tr>
           </thead>
-          <tbody id="tabela-corpo" class="divide-y divide-slate-700">
-            <tr>
-              <td colspan="9" class="text-center p-8 text-slate-500">Carregando dados...</td>
-            </tr>
-          </tbody>
+          <tbody id="tabela-corpo"></tbody>
         </table>
       </div>
     </div>
-
   </div>
 
-  <!-- 6. Modal Adicionar Histórico -->
-  <div id="modal-historico" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-      <h3 class="text-lg font-bold text-white">Inserir Tratativa - TA <span id="modal-ta-id" class="text-blue-400"></span></h3>
-      <textarea id="modal-texto" rows="4" placeholder="Ex: Técnico em tratativas, deslocamento de 1:30h, sem mão de obra..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500"></textarea>
-      <div class="flex justify-end gap-3">
-        <button onclick="fecharModal()" class="px-4 py-2 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300 transition">Cancelar</button>
-        <button onclick="salvarHistorico()" class="px-4 py-2 text-xs bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium transition shadow">Salvar Histórico</button>
+  <!-- MODAL DE ATUALIZAÇÃO -->
+  <div class="modal fade" id="modalObs" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-light">
+          <h6 class="modal-title fw-bold">Atualizar TA: <span id="modal-ta-id" class="text-primary"></span></h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p id="modal-detalhe-site" class="small text-muted mb-2"></p>
+          
+          <div class="row g-2 mb-2">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Tipo de Rede:</label>
+              <select id="modal-tipo-rede" class="form-select form-select-sm">
+                <option value="">Selecione...</option>
+                <option value="Móvel">Móvel</option>
+                <option value="Fixa">Fixa</option>
+                <option value="Ambos">Ambos</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Previsão:</label>
+              <input type="text" id="modal-previsao" class="form-control form-control-sm" placeholder="Ex: 14:30 ou 04/11 16:00">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Status de Atendimento:</label>
+            <select id="modal-status-op" class="form-select form-select-sm">
+              <option value="Pendente">Pendente</option>
+              <option value="Em tratativa">Em tratativa</option>
+              <option value="Em deslocamento">Em deslocamento</option>
+              <option value="Em atendimento">Em atendimento</option>
+              <option value="Com GMG acoplado">Com GMG acoplado</option>
+              <option value="GMG em deslocamento">GMG em deslocamento</option>
+              <option value="Análise de Mão de Obra">Análise de Mão de Obra</option>
+              <option value="Concluído">Concluído</option>
+            </select>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Observações / Andamento Técnico:</label>
+            <textarea id="modal-texto-obs" class="form-control" rows="4" placeholder="Insira o andamento técnico..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-sm btn-primary" id="btn-salvar" onclick="salvarAndamento()">Salvar</button>
+        </div>
       </div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // URL do Web App configurada
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfyczyb5w8g5-1em1r3RcRj4RahJBDuUfV2EcaTmm-zeA0izR7i_kCoi8J4Iwn9MbSEOCvK/exec";
+    const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqo-oRoCVNXTJE8RxAnfQcNWPty232zFuVArT6l-1w4CnsSLO7YETVeBsKPWh0SkwX8wVg-VT7Vb80/pub?gid=2115875129&single=true&output=csv";
+    const URL_APPS_SCRIPT_WEBAPP = "COLE_AQUI_A_URL_DO_WEBAPP_APPS_SCRIPT";
 
-    let todosDados = [];
-    let statusFiltroAtual = "TODOS";
-    let taSelecionado = null;
-    let chartDDDInstance = null;
-    let chartEscalonamentoInstance = null;
+    let dadosGlobais = [];
+    let dadosFiltradosAtuais = [];
+    let modalInstance = null;
 
-    // 7. Requisição GET via JSONP para contornar restrições CORS no Google Workspace
+    function limparTexto(txt) {
+      if (!txt) return "";
+      return txt
+        .replace(/SERVIÃƒÂ‰|SERVIÃƒÂ|SERVIÃ‰|SERVIÃ/g, "SERVIÇ")
+        .replace(/RIBEIRÃƒÂƒO|RIBEIRÃƒO|RIBEIRÃO/g, "RIBEIRÃO")
+        .replace(/GRAÃƒÂ‡AS|GRAÃ‡AS/g, "GRAÇAS")
+        .replace(/PENÃƒÂPOLIS|PENÃPOLIS/g, "PENÁPOLIS")
+        .replace(/mÃƒÂ³dulos|mÃ³dulos/g, "módulos")
+        .replace(/gerÃƒÂ¢ncia|gerÃ¢ncia/g, "gerência");
+    }
+
+    window.onload = function() {
+      modalInstance = new bootstrap.Modal(document.getElementById('modalObs'));
+      carregarDados();
+    };
+
+    function formatarHoraAtual() {
+      const agora = new Date();
+      return agora.toTimeString().split(' ')[0];
+    }
+
     function carregarDados() {
-      // Define a função de callback global esperada pelo JSONP
-      window.processarDadosGoogle = function(json) {
-        if (json.status === "success") {
-          todosDados = json.data;
-          atualizarDashboard();
-          renderizarTabela();
-        } else {
-          alert("Erro na planilha: " + json.message);
-        }
-        
-        // Remove a tag de script temporária
-        const scriptAntigo = document.getElementById("jsonp-trigger");
-        if (scriptAntigo) scriptAntigo.remove();
-      };
+      document.getElementById('txt-ultima-sync').innerText = "Carregando...";
+      const urlSemCache = URL_CSV + "&_t=" + new Date().getTime();
 
-      // Limpa qualquer requisição pendente
-      const scriptExistente = document.getElementById("jsonp-trigger");
-      if (scriptExistente) scriptExistente.remove();
+      Papa.parse(urlSemCache, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          dadosGlobais = results.data.map(r => ({
+            ta: r["TA"] || "",
+            ddd: r["DDD"] || "",
+            coordenador: limparTexto(r["Coordenador"] || ""),
+            site: r["SITE"] || "",
+            localidade: limparTexto(r["Localidade"] || ""),
+            site_nome: limparTexto(r["SITE Nome"] || ""),
+            qtd_ta: r["QTD TA"] || "",
+            alarme: limparTexto(r["Alarme"] || ""),
+            tempo_total: r["Tempo Total"] || "",
+            tempo_gestor: r["Tempo Gestor Tel"] || "",
+            prioridade: r["Prioridade"] || "",
+            grupo_responsavel: r["Grupo Responsavel"] || "",
+            status_sla: r["STATUS SLA"] || "",
+            tipo_rede: r["TIpo Rede"] || "",
+            status_atendimento: r["Status Atendimento"] || "Pendente",
+            previsao: r["Previsão"] || "",
+            observacao: r["Observação"] || ""
+          })).filter(d => d.ta && d.ta.trim() !== "");
 
-      // Injeta dynamic script tag
-      const script = document.createElement("script");
-      script.id = "jsonp-trigger";
-      script.src = `${WEB_APP_URL}?callback=processarDadosGoogle&_=${new Date().getTime()}`;
-      
-      script.onerror = function() {
-        alert("Erro de conexão ao carregar dados do Web App Google.\n\nVerifique se o script foi implantado com permissão para 'Qualquer pessoa'.");
-      };
-
-      document.body.appendChild(script);
-    }
-
-    // Convertidor de datas ISO (ex: "1899-12-31T19:39:42.000Z") e strings HH:MM:SS para segundos
-    function tempoParaSegundos(tempoStr) {
-      if (!tempoStr) return 0;
-
-      if (typeof tempoStr === 'string' && tempoStr.includes('T')) {
-        const d = new Date(tempoStr);
-        if (!isNaN(d.getTime())) {
-          return d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds();
-        }
-      }
-
-      if (typeof tempoStr === 'string' && tempoStr.includes(':')) {
-        const partes = tempoStr.split(':').map(Number);
-        if (partes.length === 3) {
-          return partes[0] * 3600 + partes[1] * 60 + partes[2];
-        }
-      }
-
-      return 0;
-    }
-
-    // Formata objeto ISO do Google Sheets para formato HH:MM:SS limpo de exibição
-    function formatarTempoExibicao(tempoStr) {
-      if (!tempoStr) return '-';
-      if (typeof tempoStr === 'string' && tempoStr.includes('T')) {
-        const d = new Date(tempoStr);
-        if (!isNaN(d.getTime())) {
-          const h = String(d.getUTCHours()).padStart(2, '0');
-          const m = String(d.getUTCMinutes()).padStart(2, '0');
-          const s = String(d.getUTCSeconds()).padStart(2, '0');
-          return `${h}:${m}:${s}`;
-        }
-      }
-      return tempoStr;
-    }
-
-    function atualizarDashboard() {
-      // Considera apenas a Base Ativa (exclui TRAMITADOS das métricas ativas)
-      const tasAtivos = todosDados.filter(i => (i["Validação"] || "NOVO TA") !== "TRAMITADO");
-      
-      const totalAtivos = tasAtivos.length;
-      let proximoVencer = 0; // Entre 2h (7200s) e 4h (14400s)
-      let foraPrazo = 0;     // Maior que 4h (> 14400s)
-      let gmgCount = 0;
-      let countEsc = 0;
-
-      tasAtivos.forEach(i => {
-        const segs = tempoParaSegundos(i["Tempo Total"]);
-        
-        if (segs >= 7200 && segs <= 14400) proximoVencer++;
-        if (segs > 14400) foraPrazo++;
-
-        const gmgVal = String(i["GMG Acoplado?"] || i["GMG Acoplado"] || "").toUpperCase();
-        if (gmgVal === "SIM") gmgCount++;
-
-        if (String(i["Esc. Supervisão"]).toUpperCase() === "SIM" || 
-            String(i["Esc. Coordenação"]).toUpperCase() === "SIM" || 
-            String(i["Esc. Gerente"]).toUpperCase() === "SIM") {
-          countEsc++;
-        }
-      });
-
-      document.getElementById("kpi-total-ativos").innerText = totalAtivos;
-      document.getElementById("kpi-proximo-vencer").innerText = proximoVencer;
-      document.getElementById("kpi-fora-prazo").innerText = foraPrazo;
-      document.getElementById("kpi-gmg").innerText = gmgCount;
-      document.getElementById("kpi-escalonados").innerText = countEsc;
-
-      // Gráfico por DDD
-      const dddCounts = {};
-      tasAtivos.forEach(i => {
-        const ddd = i.DDD ? `DDD ${i.DDD}` : 'Outros';
-        dddCounts[ddd] = (dddCounts[ddd] || 0) + 1;
-      });
-      renderGraficoDDD(dddCounts);
-
-      // Gráfico por Escalonamento de Liderança
-      let sup = 0, coord = 0, ger = 0;
-      tasAtivos.forEach(i => {
-        if (String(i["Esc. Supervisão"]).toUpperCase() === "SIM") sup++;
-        if (String(i["Esc. Coordenação"]).toUpperCase() === "SIM") coord++;
-        if (String(i["Esc. Gerente"]).toUpperCase() === "SIM") ger++;
-      });
-      renderGraficoEscalonamento(sup, coord, ger);
-    }
-
-    function renderGraficoDDD(dataObj) {
-      const ctx = document.getElementById('chartDDD').getContext('2d');
-      if (chartDDDInstance) chartDDDInstance.destroy();
-
-      chartDDDInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: Object.keys(dataObj),
-          datasets: [{
-            label: 'TAs Ativos',
-            data: Object.values(dataObj),
-            backgroundColor: '#3b82f6'
-          }]
+          popularFiltros(dadosGlobais);
+          renderizar();
+          document.getElementById('txt-ultima-sync').innerText = formatarHoraAtual();
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
-          }
+        error: function(err) {
+          document.getElementById('txt-ultima-sync').innerText = "Erro!";
+          console.error(err);
         }
       });
     }
 
-    function renderGraficoEscalonamento(sup, coord, ger) {
-      const ctx = document.getElementById('chartEscalonamento').getContext('2d');
-      if (chartEscalonamentoInstance) chartEscalonamentoInstance.destroy();
-
-      chartEscalonamentoInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Supervisão', 'Coordenação', 'Gerência'],
-          datasets: [{
-            data: [sup, coord, ger],
-            backgroundColor: ['#a855f7', '#ec4899', '#f43f5e']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#94a3b8' }, position: 'right' } }
-        }
-      });
+    function popularFiltros(dados) {
+      preencherSelect('filtro-ddd', [...new Set(dados.map(d => d.ddd))].sort());
+      preencherSelect('filtro-prioridade', [...new Set(dados.map(d => d.prioridade))].sort());
+      preencherSelect('filtro-sla', [...new Set(dados.map(d => d.status_sla))].sort());
+      preencherSelect('filtro-status-op', [...new Set(dados.map(d => d.status_atendimento))].sort());
     }
 
-    function renderizarTabela() {
-      const corpo = document.getElementById("tabela-corpo");
-      const busca = document.getElementById("busca").value.toLowerCase();
-      const filtroRede = document.getElementById("filtro-rede").value;
-      const filtroGMG = document.getElementById("filtro-gmg").value;
-      const filtroSLA = document.getElementById("filtro-sla").value;
-      const filtroEscalonamento = document.getElementById("filtro-escalonamento").value;
-      
-      const filtrados = todosDados.filter(item => {
-        // Validação Base
-        const validacao = item["Validação"] || "NOVO TA";
-        const bateStatus = (statusFiltroAtual === "TODOS") || (validacao === statusFiltroAtual);
-        
-        // Tipo de Rede
-        const tipoRede = item["TIpo Rede"] || item["Tipo Rede"] || "";
-        const bateRede = (filtroRede === "TODAS") || (tipoRede.toLowerCase() === filtroRede.toLowerCase());
+    function preencherSelect(id, lista) {
+      const el = document.getElementById(id);
+      const valAtual = el.value;
+      el.innerHTML = '<option value="">Todos</option>';
+      lista.filter(Boolean).forEach(item => {
+        el.innerHTML += `<option value="${item}">${item}</option>`;
+      });
+      el.value = valAtual;
+    }
 
-        // GMG Acoplado
-        const gmgVal = String(item["GMG Acoplado?"] || item["GMG Acoplado"] || "").toUpperCase();
-        let bateGMG = true;
-        if (filtroGMG === "SIM") bateGMG = (gmgVal === "SIM");
-        if (filtroGMG === "NAO") bateGMG = (gmgVal !== "SIM");
+    function aplicarFiltros() {
+      renderizar();
+    }
 
-        // SLA / Prazos (2h = 7200s, 4h = 14400s)
-        const segs = tempoParaSegundos(item["Tempo Total"]);
-        let bateSLA = true;
-        if (filtroSLA === "NO_PRAZO") bateSLA = (segs < 7200);
-        if (filtroSLA === "PROXIMO_VENCER") bateSLA = (segs >= 7200 && segs <= 14400);
-        if (filtroSLA === "FORA_PRAZO") bateSLA = (segs > 14400);
+    function renderizar() {
+      const fDdd = document.getElementById('filtro-ddd').value;
+      const fPrio = document.getElementById('filtro-prioridade').value;
+      const fSla = document.getElementById('filtro-sla').value;
+      const fStatusOp = document.getElementById('filtro-status-op').value;
+      const fBusca = (document.getElementById('filtro-busca').value || '').toLowerCase();
 
-        // Escalonamento
-        const isSup = String(item["Esc. Supervisão"]).toUpperCase() === "SIM";
-        const isCoord = String(item["Esc. Coordenação"]).toUpperCase() === "SIM";
-        const isGer = String(item["Esc. Gerente"]).toUpperCase() === "SIM";
+      dadosFiltradosAtuais = dadosGlobais.filter(d => {
+        const atendeDdd = !fDdd || String(d.ddd) === String(fDdd);
+        const atendePrio = !fPrio || String(d.prioridade) === String(fPrio);
+        const atendeSla = !fSla || String(d.status_sla) === String(fSla);
+        const atendeStatusOp = !fStatusOp || String(d.status_atendimento) === String(fStatusOp);
+        const atendeBusca = !fBusca || 
+          (d.site_nome || '').toLowerCase().includes(fBusca) ||
+          (d.site || '').toLowerCase().includes(fBusca) ||
+          (d.alarme || '').toLowerCase().includes(fBusca) ||
+          (d.ta || '').toLowerCase().includes(fBusca);
 
-        let bateEsc = true;
-        if (filtroEscalonamento === "COM_ESCALONAMENTO") bateEsc = (isSup || isCoord || isGer);
-        if (filtroEscalonamento === "SUPERVISAO") bateEsc = isSup;
-        if (filtroEscalonamento === "COORDENACAO") bateEsc = isCoord;
-        if (filtroEscalonamento === "GERENTE") bateEsc = isGer;
-        if (filtroEscalonamento === "SEM_ESCALONAMENTO") bateEsc = (!isSup && !isCoord && !isGer);
-
-        // Busca Geral em texto
-        const textoBusca = `${item.TA} ${item.Coordenador} ${item.Localidade} ${item.SITE}`.toLowerCase();
-        const bateBusca = textoBusca.includes(busca);
-
-        return bateStatus && bateRede && bateGMG && bateSLA && bateEsc && bateBusca;
+        return atendeDdd && atendePrio && atendeSla && atendeStatusOp && atendeBusca;
       });
 
-      if (filtrados.length === 0) {
-        corpo.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-slate-500">Nenhum TA encontrado com os filtros selecionados.</td></tr>`;
-        return;
-      }
+      // Atualiza os Cards
+      document.getElementById('card-total').innerText = dadosFiltradosAtuais.length;
+      document.getElementById('card-vencendo').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('VENCENDO')).length;
+      document.getElementById('card-fora').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length;
+      document.getElementById('card-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Em deslocamento').length;
+      document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
+      document.getElementById('card-mao-de-obra').innerText = dadosFiltradosAtuais.filter(d => 
+        d.status_atendimento === 'Análise de Mão de Obra' || d.status_atendimento === 'Aguardando sobressalente'
+      ).length;
 
-      corpo.innerHTML = filtrados.map(item => {
-        const val = item["Validação"] || "NOVO TA";
-        let badgeColor = "bg-green-500/10 text-green-400 border-green-500/20";
-        if (val === "BASE ANTERIOR") badgeColor = "bg-blue-500/10 text-blue-400 border-blue-500/20";
-        if (val === "TRAMITADO") badgeColor = "bg-red-500/10 text-red-400 border-red-500/20";
+      // Monta as linhas da tabela
+      const tbody = document.getElementById('tabela-corpo');
+      tbody.innerHTML = '';
 
-        const isGMG = String(item["GMG Acoplado?"] || item["GMG Acoplado"] || "").toUpperCase() === "SIM";
-        const badgeGMG = isGMG 
-          ? '<span class="px-2 py-0.5 text-xs font-semibold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">SIM</span>'
-          : '<span class="text-slate-500 text-xs">NÃO</span>';
+      dadosFiltradosAtuais.forEach(d => {
+        let slaBadgeClass = 'badge bg-secondary';
+        const sla = (d.status_sla || '').toUpperCase();
+        if (sla.includes('VENCENDO')) slaBadgeClass = 'badge badge-vencendo';
+        else if (sla.includes('FORA')) slaBadgeClass = 'badge badge-fora';
+        else if (sla.includes('DENTRO')) slaBadgeClass = 'badge badge-dentro';
 
-        // Cores de tempo por SLA
-        const segs = tempoParaSegundos(item["Tempo Total"]);
-        let tempoColor = "text-slate-200";
-        if (segs >= 7200 && segs <= 14400) tempoColor = "text-amber-400 font-bold";
-        if (segs > 14400) tempoColor = "text-red-400 font-bold";
+        let statusBadgeClass = 'badge bg-info text-dark';
+        const statusAtual = (d.status_atendimento || '').trim();
 
-        const tempoFormatado = formatarTempoExibicao(item["Tempo Total"]);
+        if (statusAtual.toLowerCase() === 'em tratativa') {
+          statusBadgeClass = 'badge bg-success text-white';
+        } else if (statusAtual === 'Pendente') {
+          statusBadgeClass = 'badge bg-info text-dark';
+        } else if (statusAtual === 'Concluído') {
+          statusBadgeClass = 'badge bg-dark text-white';
+        } else if (statusAtual === 'Análise de Mão de Obra' || statusAtual === 'Aguardando sobressalente') {
+          statusBadgeClass = 'badge bg-secondary text-white';
+        }
 
-        let escBadges = [];
-        if (String(item["Esc. Supervisão"]).toUpperCase() === "SIM") escBadges.push('<span class="bg-purple-500/20 text-purple-300 text-[10px] px-1.5 py-0.5 rounded border border-purple-500/30">Sup</span>');
-        if (String(item["Esc. Coordenação"]).toUpperCase() === "SIM") escBadges.push('<span class="bg-pink-500/20 text-pink-300 text-[10px] px-1.5 py-0.5 rounded border border-pink-500/30">Coord</span>');
-        if (String(item["Esc. Gerente"]).toUpperCase() === "SIM") escBadges.push('<span class="bg-rose-500/20 text-rose-300 text-[10px] px-1.5 py-0.5 rounded border border-rose-500/30">Ger</span>');
-
-        return `
-          <tr class="hover:bg-slate-700/50 transition">
-            <td class="p-3"><span class="px-2 py-0.5 text-[11px] font-semibold rounded-full border ${badgeColor}">${val}</span></td>
-            <td class="p-3 font-mono font-bold text-white">${item.TA}</td>
-            <td class="p-3">${item.DDD || '-'}</td>
-            <td class="p-3 font-mono ${tempoColor}">${tempoFormatado}</td>
-            <td class="p-3">${badgeGMG}</td>
-            <td class="p-3"><div class="flex gap-1">${escBadges.length > 0 ? escBadges.join('') : '<span class="text-slate-500 text-xs">-</span>'}</div></td>
-            <td class="p-3">${item.Coordenador || '-'} <br><span class="text-xs text-slate-500">${item.SITE || '-'}</span></td>
-            <td class="p-3 text-xs text-slate-400 max-w-xs truncate">${item["Histórico de tratativas"] || 'Sem histórico'}</td>
-            <td class="p-3 text-center">
-              <button onclick="abrirModal('${item.TA}')" class="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-xs rounded text-slate-200 border border-slate-600">📝 Histórico</button>
+        tbody.innerHTML += `
+          <tr>
+            <td>
+              <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="abrirModal('${d.ta}')">
+                <i class="bi bi-pencil-square"></i> OBS
+              </button>
             </td>
+            <td><strong>${d.ta}</strong></td>
+            <td>${d.ddd}</td>
+            <td><span class="badge bg-dark">${d.prioridade}</span></td>
+            <td>
+              <div><strong>${d.site}</strong> - ${d.localidade}</div>
+              <small class="text-muted">${d.site_nome}</small>
+            </td>
+            <td><small>${d.alarme}</small></td>
+            <td><code>${d.tempo_gestor}</code></td>
+            <td><span class="${slaBadgeClass}">${d.status_sla}</span></td>
+            <td><span class="badge bg-light text-dark border">${d.tipo_rede || '-'}</span></td>
+            <td><span class="${statusBadgeClass}">${d.status_atendimento}</span></td>
+            <td><small>${d.previsao || '-'}</small></td>
+            <td class="obs-cell" title="${d.observacao}">${d.observacao ? d.observacao : '<span class="text-muted">-</span>'}</td>
           </tr>
         `;
-      }).join('');
-    }
-
-    // Handlers para ações rápidas nos Cards KPI
-    function aplicarFiltroSLA(valor) {
-      if (valor === 'TODOS_SLA') document.getElementById("filtro-sla").value = "TODOS";
-      if (valor === 'PROXIMO_VENCER') document.getElementById("filtro-sla").value = "PROXIMO_VENCER";
-      if (valor === 'FORA_PRAZO') document.getElementById("filtro-sla").value = "FORA_PRAZO";
-      renderizarTabela();
-    }
-
-    function aplicarFiltroGMG(valor) {
-      document.getElementById("filtro-gmg").value = valor;
-      renderizarTabela();
-    }
-
-    function aplicarFiltroEscalonamento(valor) {
-      document.getElementById("filtro-escalonamento").value = (valor === 'TODOS') ? 'COM_ESCALONAMENTO' : valor;
-      renderizarTabela();
-    }
-
-    function filtrarStatus(status) {
-      statusFiltroAtual = status;
-      ["TODOS", "NOVO TA", "BASE ANTERIOR", "TRAMITADO"].forEach(st => {
-        const btn = document.getElementById(`btn-${st}`);
-        btn.className = (st === status) 
-          ? "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow"
-          : "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition";
       });
-      renderizarTabela();
     }
 
-    function abrirModal(ta) {
-      taSelecionado = ta;
-      document.getElementById("modal-ta-id").innerText = ta;
-      document.getElementById("modal-texto").value = "";
-      document.getElementById("modal-historico").classList.remove("hidden");
-    }
-
-    function fecharModal() {
-      document.getElementById("modal-historico").classList.add("hidden");
-    }
-
-    // POST via text/plain para envio de novo Histórico
-    async function salvarHistorico() {
-      const texto = document.getElementById("modal-texto").value;
-      if (!texto) return alert("Digite o histórico!");
-
-      try {
-        const resp = await fetch(WEB_APP_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ ta: taSelecionado, novoHistorico: texto })
-        });
-        
-        const text = await resp.text();
-        const res = JSON.parse(text);
-
-        if (res.status === "success") {
-          fecharModal();
-          carregarDados();
-        } else {
-          alert("Erro ao salvar: " + res.message);
-        }
-      } catch (err) {
-        alert("Erro ao salvar histórico via API.");
+    function exportarExcel() {
+      if (!dadosFiltradosAtuais || dadosFiltradosAtuais.length === 0) {
+        alert("Não há dados para exportar no momento.");
+        return;
       }
+      
+      const dadosPlanilha = dadosFiltradosAtuais.map(d => ({
+        "TA": d.ta,
+        "DDD": d.ddd,
+        "Prioridade": d.prioridade,
+        "Coordenador": d.coordenador,
+        "SITE": d.site,
+        "Localidade": d.localidade,
+        "SITE Nome": d.site_nome,
+        "QTD TA": d.qtd_ta,
+        "Alarme": d.alarme,
+        "Tempo Total": d.tempo_total,
+        "Tempo Gestor": d.tempo_gestor,
+        "Grupo Responsável": d.grupo_responsavel,
+        "Status SLA": d.status_sla,
+        "Tipo de Rede": d.tipo_rede,
+        "Status Atendimento": d.status_atendimento,
+        "Previsão": d.previsao,
+        "Observação": d.observacao
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Base_TAs_Filtrados");
+      
+      const dataHora = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 19);
+      XLSX.writeFile(wb, `Base_TAs_${dataHora}.xlsx`);
     }
 
-    // Inicializa a chamada dos dados ao abrir a página
-    carregarDados();
+    function abrirModal(idTa) {
+      const item = dadosGlobais.find(d => String(d.ta) === String(idTa));
+      if (!item) return;
+
+      document.getElementById('modal-ta-id').innerText = item.ta;
+      document.getElementById('modal-detalhe-site').innerText = `${item.site} | ${item.site_nome} (${item.localidade} - DDD ${item.ddd})`;
+      document.getElementById('modal-tipo-rede').value = item.tipo_rede || '';
+      document.getElementById('modal-previsao').value = item.previsao || '';
+      
+      let statusSelecionado = item.status_atendimento || 'Pendente';
+      if (statusSelecionado === 'Aguardando sobressalente') statusSelecionado = 'Análise de Mão de Obra';
+      document.getElementById('modal-status-op').value = statusSelecionado;
+      
+      document.getElementById('modal-texto-obs').value = item.observacao || '';
+      modalInstance.show();
+    }
+
+    function salvarAndamento() {
+      const idTa = document.getElementById('modal-ta-id').innerText;
+      const tipoRede = document.getElementById('modal-tipo-rede').value;
+      const novoStatus = document.getElementById('modal-status-op').value;
+      const novaPrevisao = document.getElementById('modal-previsao').value;
+      const novaObs = document.getElementById('modal-texto-obs').value;
+      const btn = document.getElementById('btn-salvar');
+
+      btn.disabled = true;
+      btn.innerText = 'Salvando...';
+
+      fetch(URL_APPS_SCRIPT_WEBAPP, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ta: idTa,
+          tipoRede: tipoRede,
+          statusAtendimento: novoStatus,
+          previsao: novaPrevisao,
+          observacao: novaObs
+        })
+      }).then(() => {
+        btn.disabled = false;
+        btn.innerText = 'Salvar';
+        modalInstance.hide();
+
+        const item = dadosGlobais.find(d => String(d.ta) === String(idTa));
+        if (item) {
+          item.tipo_rede = tipoRede;
+          item.status_atendimento = novoStatus;
+          item.previsao = novaPrevisao;
+          item.observacao = novaObs;
+        }
+        renderizar();
+      }).catch(err => {
+        btn.disabled = false;
+        btn.innerText = 'Salvar';
+        alert("Erro ao salvar: " + err);
+      });
+    }
   </script>
 </body>
 </html>
-```
-
----
-
-### Resumo das Soluções Aplicadas:
-
-1. **Bypass Definitivo de CORS via JSONP:**
-   - A função `carregarDados()` cria dinamicamente uma tag `<script>` apontando para `${WEB_APP_URL}?callback=processarDadosGoogle...`.
-   - O navegador descarrega o payload JSON do Google Workspace diretamente como script executável sem ser bloqueado pelas políticas de origem cruzada (CORS) do GitHub Pages.
-2. **Normalização de timestamps ISO do Google Sheets:**
-   - `tempoParaSegundos()` e `formatarTempoExibicao()` extraem as horas reais (`HH:MM:SS`) de objetos de data como `1899-12-31T19:39:42.000Z`.
-3. **Painel Interativo:**
-   - Clicar nos KPIs filtra a tabela diretamente.
-   - Suporte completo a filtros de GMG, Escalonamento (Supervisão/Coordenação/Gerência), SLA (2h-4h e >4h) e busca rápida.
