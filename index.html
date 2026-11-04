@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   
-  <!-- Scripts: PapaParse (CSV), XLSX (Excel) e Chart.js (Gráficos) -->
+  <!-- Scripts: PapaParse, SheetJS e Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -23,7 +23,7 @@
       color: #ffffff;
       border-radius: 14px;
       padding: 16px 24px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
     }
     .header-icon-box {
@@ -36,7 +36,7 @@
       align-items: center;
       justify-content: center;
       font-size: 1.55rem;
-      color: #20c997; /* Verde vivo de transmissão */
+      color: #20c997;
     }
     .header-title {
       font-size: 1.35rem;
@@ -91,27 +91,54 @@
     .btn-header-excel { background-color: #1b63ff; border: 1px solid #1b63ff; color: #ffffff; }
     .btn-header-excel:hover { background-color: #0f4ee6; color: #ffffff; }
 
-    /* CARDS & TABELA */
-    .card-kpi { border: none; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    /* CARDS COMPACTOS COM MENOR ALTURA E FONTE MENOR */
+    .card-kpi { 
+      border: none; 
+      border-radius: 8px; 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
+      padding: 8px 12px !important;
+    }
+    .card-kpi small {
+      font-size: 0.65rem !important;
+      letter-spacing: 0.3px;
+      display: block;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-kpi h3 {
+      font-size: 1.4rem !important;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-top: 3px !important;
+    }
+
+    /* FILTROS E TABELA */
+    .card-filtros {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
     .badge-vencendo { background-color: #ffc107; color: #000; font-weight: bold; }
     .badge-fora { background-color: #dc3545; color: #fff; font-weight: bold; }
     .badge-dentro { background-color: #198754; color: #fff; }
     .table td, .table th { vertical-align: middle; }
-    .obs-cell { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .obs-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* CONTAINER DO GRÁFICO */
+    /* CONTAINERS DE GRÁFICOS */
     .chart-container-card {
       background: #ffffff;
       border-radius: 10px;
       border: none;
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      padding: 16px 20px;
-      margin-bottom: 20px;
+      padding: 14px 18px;
+      height: 100%;
     }
 
     @media print {
       body { background-color: #fff; font-size: 10pt; }
-      .header-painel, .btn, .modal, .card-kpi, .card-filtros, .chart-container-card { display: none !important; }
+      .header-painel, .btn, .modal, .card-kpi, .card-filtros, .chart-container-card, .chart-row { display: none !important; }
       .table { width: 100% !important; }
     }
   </style>
@@ -122,12 +149,10 @@
     <!-- CABEÇALHO PADRONIZADO -->
     <div class="header-painel d-flex flex-wrap justify-content-between align-items-center gap-3">
       <div class="d-flex align-items-center gap-3">
-        <!-- ÍCONE DE SINAL EM VERDE CONFORME SOLICITADO -->
         <div class="header-icon-box shadow-sm">
           <i class="bi bi-broadcast"></i>
         </div>
         <div>
-          <!-- TÍTULO SEM O BADGE DA IMAGEM 2 -->
           <div class="header-title">
             CONTROLE DE ORDENS DE SERVIÇO
           </div>
@@ -156,73 +181,60 @@
       </div>
     </div>
 
-    <!-- CARDS TOTALIZADORES -->
+    <!-- CARDS TOTALIZADORES COMPACTOS -->
     <div class="row g-2 mb-3">
-      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 12%;">
-        <div class="card card-kpi p-3 bg-white border-start border-primary border-4 h-100">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
+        <div class="card card-kpi bg-white border-start border-primary border-4 h-100">
           <small class="text-muted fw-bold">TOTAL TAs</small>
           <h3 id="card-total" class="m-0 text-primary">0</h3>
         </div>
       </div>
-      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 12%;">
-        <div class="card card-kpi p-3 bg-white border-start border-warning border-4 h-100">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
+        <div class="card card-kpi bg-white border-start border-warning border-4 h-100">
           <small class="text-muted fw-bold">VENCENDO</small>
           <h3 id="card-vencendo" class="m-0 text-warning">0</h3>
         </div>
       </div>
-      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 12%;">
-        <div class="card card-kpi p-3 bg-white border-start border-danger border-4 h-100">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
+        <div class="card card-kpi bg-white border-start border-danger border-4 h-100">
           <small class="text-muted fw-bold">FORA DO PRAZO</small>
           <h3 id="card-fora" class="m-0 text-danger">0</h3>
         </div>
       </div>
-      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 12%;">
-        <div class="card card-kpi p-3 bg-white border-start border-info border-4 h-100">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
+        <div class="card card-kpi bg-white border-start border-info border-4 h-100">
           <small class="text-muted fw-bold">EM DESLOCAMENTO</small>
           <h3 id="card-deslocamento" class="m-0 text-info">0</h3>
         </div>
       </div>
-      <!-- CARD: REDE EXTERNA -->
-      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 13%;">
-        <div class="card card-kpi p-3 bg-white border-start border-4 h-100" style="border-left-color: #6f42c1 !important;">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 13%;">
+        <div class="card card-kpi bg-white border-start border-4 h-100" style="border-left-color: #6f42c1 !important;">
           <small class="text-muted fw-bold">REDE EXTERNA</small>
           <h3 id="card-rede-externa" class="m-0" style="color: #6f42c1;">0</h3>
         </div>
       </div>
-      <!-- CARD: AGUARD. LIBERAÇÃO ACESSO -->
-      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 14%;">
-        <div class="card card-kpi p-3 bg-white border-start border-4 h-100" style="border-left-color: #fd7e14 !important;">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 15%;">
+        <div class="card card-kpi bg-white border-start border-4 h-100" style="border-left-color: #fd7e14 !important;">
           <small class="text-muted fw-bold">AGUARD. LIBERAÇÃO ACESSO</small>
           <h3 id="card-liberacao-acesso" class="m-0" style="color: #fd7e14;">0</h3>
         </div>
       </div>
-      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 12%;">
-        <div class="card card-kpi p-3 bg-white border-start border-success border-4 h-100">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
+        <div class="card card-kpi bg-white border-start border-success border-4 h-100">
           <small class="text-muted fw-bold">GMG ACOPLADO</small>
           <h3 id="card-gmg" class="m-0 text-success">0</h3>
         </div>
       </div>
-      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 13%;">
-        <div class="card card-kpi p-3 bg-white border-start border-secondary border-4 h-100">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 14%;">
+        <div class="card card-kpi bg-white border-start border-secondary border-4 h-100">
           <small class="text-muted fw-bold">ANÁLISE MÃO DE OBRA</small>
           <h3 id="card-mao-de-obra" class="m-0 text-secondary">0</h3>
         </div>
       </div>
     </div>
 
-    <!-- SEÇÃO DO GRÁFICO: VOLUME POR DDD E LINHAS DE PRAZO -->
-    <div class="chart-container-card">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Distribuição de TAs por DDD (Volume Total vs SLA)</h6>
-        <small class="text-muted">Barras: Volume Total | Linhas: Dentro vs Fora do Prazo</small>
-      </div>
-      <div style="position: relative; height: 260px; width: 100%;">
-        <canvas id="graficoDddSla"></canvas>
-      </div>
-    </div>
-
-    <!-- FILTROS -->
-    <div class="card card-filtros p-3 mb-3 border-0 shadow-sm bg-white">
+    <!-- FILTROS (ACIMA DOS GRÁFICOS CONFORME SOLICITADO) -->
+    <div class="card card-filtros p-3 mb-3 bg-white">
       <div class="row g-2">
         <div class="col-md-2">
           <label class="form-label small fw-bold">DDD</label>
@@ -247,6 +259,35 @@
         <div class="col-md-2">
           <label class="form-label small fw-bold">Buscar (Site / Alarme / TA)</label>
           <input type="text" id="filtro-busca" class="form-control form-control-sm" placeholder="Digite para buscar..." onkeyup="aplicarFiltros()">
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO DE GRÁFICOS NA MESMA LINHA -->
+    <div class="row g-3 mb-3 chart-row">
+      <!-- Gráfico 1: Volume por DDD + Linha Pendente -->
+      <div class="col-lg-7">
+        <div class="chart-container-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Volume por DDD vs Status Pendente</h6>
+            <small class="text-muted">Colunas: Volume Total | Linha: Pendente</small>
+          </div>
+          <div style="position: relative; height: 240px; width: 100%;">
+            <canvas id="graficoDddSla"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráfico 2: Barras Horizontais com Prioridade (P1 a P4) -->
+      <div class="col-lg-5">
+        <div class="chart-container-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-distribute-horizontal text-primary me-2"></i>Distribuição por Prioridade</h6>
+            <small class="text-muted">Extremidade: Volume | Interna: %</small>
+          </div>
+          <div style="position: relative; height: 240px; width: 100%;">
+            <canvas id="graficoPrioridades"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -344,7 +385,8 @@
     let dadosGlobais = [];
     let dadosFiltradosAtuais = [];
     let modalInstance = null;
-    let chartInstance = null;
+    let chartInstanceDdd = null;
+    let chartInstancePrio = null;
 
     function limparTexto(txt) {
       if (!txt) return "";
@@ -371,7 +413,6 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          // Extrai o valor da Coluna T ou U caso venha como cabeçalho ou nas primeiras linhas
           let dataControlePlanilha = "";
           if (results.data.length > 0) {
             const linha1 = results.data[0];
@@ -392,7 +433,7 @@
               alarme: limparTexto(r["Alarme"] || ""),
               tempo_total: r["Tempo Total"] || "",
               tempo_gestor: r["Tempo Gestor Tel"] || "",
-              prioridade: r["Prioridade"] || "",
+              prioridade: (r["Prioridade"] || "").trim(),
               grupo_responsavel: r["Grupo Responsavel"] || "",
               status_sla: r["STATUS SLA"] || "",
               tipo_rede: tipoRedeExtraido.trim(),
@@ -405,7 +446,6 @@
           popularFiltros(dadosGlobais);
           renderizar();
 
-          // Exibe o horário da sincronização e os dados de atualização da base da Coluna T/U
           const agora = new Date().toTimeString().split(' ')[0];
           document.getElementById('txt-ultima-sync').innerText = agora;
           
@@ -479,8 +519,9 @@
         d.status_atendimento === 'Análise de Mão de Obra' || d.status_atendimento === 'Aguardando sobressalente'
       ).length;
 
-      // Gráfico
-      renderizarGrafico(dadosFiltradosAtuais);
+      // Renderiza ambos os gráficos
+      renderizarGraficoDdd(dadosFiltradosAtuais);
+      renderizarGraficoPrioridades(dadosFiltradosAtuais);
 
       // Tabela
       const tbody = document.getElementById('tabela-corpo');
@@ -539,62 +580,49 @@
       });
     }
 
-    function renderizarGrafico(dados) {
+    // GRÁFICO 1: DDD vs PENDENTE
+    function renderizarGraficoDdd(dados) {
       const dddsUnicos = [...new Set(dados.map(d => d.ddd))].filter(Boolean).sort();
       const volumeTotal = [];
-      const foraPrazo = [];
-      const dentroPrazo = [];
+      const volumePendente = [];
 
       dddsUnicos.forEach(ddd => {
         const itensDdd = dados.filter(d => d.ddd === ddd);
         volumeTotal.push(itensDdd.length);
-        foraPrazo.push(itensDdd.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length);
-        dentroPrazo.push(itensDdd.filter(d => !(d.status_sla || '').toUpperCase().includes('FORA')).length);
+        volumePendente.push(itensDdd.filter(d => (d.status_atendimento || '').trim().toLowerCase() === 'pendente').length);
       });
 
       const ctx = document.getElementById('graficoDddSla').getContext('2d');
-      if (chartInstance) {
-        chartInstance.destroy();
+      if (chartInstanceDdd) {
+        chartInstanceDdd.destroy();
       }
 
-      chartInstance = new Chart(ctx, {
+      chartInstanceDdd = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: dddsUnicos.map(d => `DDD ${d}`),
           datasets: [
             {
               type: 'bar',
-              label: 'Volume Total (TAs)',
+              label: 'Volume Total',
               data: volumeTotal,
               backgroundColor: 'rgba(27, 99, 255, 0.75)',
               borderColor: '#1b63ff',
               borderWidth: 1,
               borderRadius: 6,
-              order: 3
+              order: 2
             },
             {
               type: 'line',
-              label: 'Dentro do Prazo / Vencendo',
-              data: dentroPrazo,
-              borderColor: '#198754',
-              backgroundColor: '#198754',
-              borderWidth: 2,
+              label: 'Pendente',
+              data: volumePendente,
+              borderColor: '#fd7e14',
+              backgroundColor: '#fd7e14',
+              borderWidth: 2.5,
               tension: 0.25,
               fill: false,
               pointRadius: 4,
               order: 1
-            },
-            {
-              type: 'line',
-              label: 'Fora do Prazo',
-              data: foraPrazo,
-              borderColor: '#dc3545',
-              backgroundColor: '#dc3545',
-              borderWidth: 2,
-              tension: 0.25,
-              fill: false,
-              pointRadius: 4,
-              order: 2
             }
           ]
         },
@@ -602,13 +630,117 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
+            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11, weight: '600' } } },
+            tooltip: { mode: 'index', intersect: false }
           },
           scales: {
             x: { grid: { display: false } },
             y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(0, 0, 0, 0.05)' } }
           }
         }
+      });
+    }
+
+    // GRÁFICO 2: BARRAS HORIZONTAIS DE PRIORIDADE COM VOLUME NA EXTREMIDADE E % NA BASE INTERNA
+    function renderizarGraficoPrioridades(dados) {
+      const labelsPrio = ['P1', 'P2', 'P3', 'P4'];
+      const totalGeral = dados.length;
+
+      // Mapeia valores numéricos ou texto (ex: "1" ou "P1")
+      const contagem = [
+        dados.filter(d => d.prioridade === '1' || d.prioridade.toUpperCase() === 'P1').length,
+        dados.filter(d => d.prioridade === '2' || d.prioridade.toUpperCase() === 'P2').length,
+        dados.filter(d => d.prioridade === '3' || d.prioridade.toUpperCase() === 'P3').length,
+        dados.filter(d => d.prioridade === '4' || d.prioridade.toUpperCase() === 'P4').length
+      ];
+
+      // Plugin personalizado para desenhar o % na base e o volume na ponta externa
+      const customLabelsPlugin = {
+        id: 'customBarLabels',
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          chart.data.datasets.forEach((dataset, i) => {
+            const meta = chart.getDatasetMeta(i);
+            meta.data.forEach((bar, index) => {
+              const val = dataset.data[index];
+              const pct = totalGeral > 0 ? ((val / totalGeral) * 100).toFixed(1) + '%' : '0%';
+              
+              ctx.save();
+              ctx.font = 'bold 11px sans-serif';
+
+              // 1. Rótulo de % na base interna da barra (à esquerda)
+              ctx.fillStyle = '#ffffff';
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              if (bar.x - bar.base > 45) {
+                ctx.fillText(pct, bar.base + 8, bar.y);
+              }
+
+              // 2. Rótulo de Volume na extremidade externa da barra (à direita)
+              ctx.fillStyle = '#212529';
+              ctx.textAlign = 'left';
+              ctx.fillText(`${val} TAs`, bar.x + 6, bar.y);
+
+              ctx.restore();
+            });
+          });
+        }
+      };
+
+      const ctx = document.getElementById('graficoPrioridades').getContext('2d');
+      if (chartInstancePrio) {
+        chartInstancePrio.destroy();
+      }
+
+      chartInstancePrio = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labelsPrio,
+          datasets: [{
+            axis: 'y',
+            data: contagem,
+            backgroundColor: [
+              '#dc3545', // P1: Vermelho
+              '#fd7e14', // P2: Laranja
+              '#ffc107', // P3: Amarelo
+              '#0dcaf0'  // P4: Ciano
+            ],
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const val = context.raw;
+                  const pct = totalGeral > 0 ? ((val / totalGeral) * 100).toFixed(1) : 0;
+                  return `Volume: ${val} TAs (${pct}%)`;
+                }
+              }
+            }
+          },
+          layout: {
+            padding: { right: 55 } // Espaço para não cortar o texto do volume na direita
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: 'rgba(0, 0, 0, 0.05)' },
+              ticks: { precision: 0 }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { font: { weight: 'bold', size: 12 } }
+            }
+          }
+        },
+        plugins: [customLabelsPlugin]
       });
     }
 
