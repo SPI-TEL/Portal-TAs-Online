@@ -13,7 +13,7 @@
   <!-- SCRIPT DE AUTO-ATUALIZAÇÃO FORÇADA DE CACHE -->
   <script>
     (function() {
-      const VERSAO_ATUAL = "1.4.0";
+      const VERSAO_ATUAL = "1.5.0";
       const versaoArmazenada = localStorage.getItem("app_versao_portal_tas");
 
       if (versaoArmazenada !== VERSAO_ATUAL) {
@@ -111,11 +111,12 @@
     .btn-header-excel { background-color: #1b63ff; border: 1px solid #1b63ff; color: #ffffff; }
     .btn-header-excel:hover { background-color: #0f4ee6; color: #ffffff; }
 
+    /* ESTILOS DOS CARDS OPERACIONAIS */
     .card-kpi { 
       border: none; 
       border-radius: 8px; 
       box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
-      padding: 8px 10px !important;
+      padding: 8px 9px !important;
     }
     .card-kpi small {
       font-size: 0.62rem !important;
@@ -128,6 +129,36 @@
     }
     .card-kpi h3 {
       font-size: 1.35rem !important;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-top: 3px !important;
+    }
+
+    /* CARD TRIPLO DE SLA */
+    .card-kpi-sla {
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      padding: 6px 10px !important;
+      border-left: 4px solid #198754;
+    }
+    .card-kpi-sla .sla-col {
+      text-align: center;
+      padding: 0 4px;
+    }
+    .card-kpi-sla .sla-col:not(:last-child) {
+      border-right: 1px solid #e2e8f0;
+    }
+    .card-kpi-sla small {
+      font-size: 0.58rem !important;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      display: block;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .card-kpi-sla h3 {
+      font-size: 1.28rem !important;
       font-weight: 800;
       line-height: 1.2;
       margin-top: 3px !important;
@@ -269,64 +300,85 @@
       </div>
     </div>
 
-    <!-- CARDS TOTALIZADORES COMPACTOS -->
-    <div class="row g-2 mb-3">
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
+    <!-- CARDS OPERACIONAIS NA MESMA LINHA -->
+    <div class="row g-2 mb-3 align-items-stretch" style="flex-wrap: nowrap; overflow-x: auto;">
+      
+      <!-- 1. TOTAL TA -->
+      <div style="flex: 1 1 10%; min-width: 95px;">
         <div class="card card-kpi bg-white border-start border-primary border-4 h-100">
           <small class="text-muted fw-bold">TOTAL TAs</small>
           <h3 id="card-total" class="m-0 text-primary">0</h3>
         </div>
       </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
-        <div class="card card-kpi bg-white border-start border-warning border-4 h-100">
-          <small class="text-muted fw-bold">VENCENDO</small>
-          <h3 id="card-vencendo" class="m-0 text-warning">0</h3>
+
+      <!-- 2. SLA TRIPLO (NO PRAZO | VENCENDO | FORA) - OCUPA O ESPAÇO DE 2 CARDS -->
+      <div style="flex: 2 1 20%; min-width: 220px;">
+        <div class="card card-kpi-sla bg-white h-100 d-flex flex-column justify-content-center">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="sla-col flex-fill">
+              <small class="text-success">NO PRAZO</small>
+              <h3 id="card-no-prazo" class="m-0 text-success">0</h3>
+            </div>
+            <div class="sla-col flex-fill">
+              <small class="text-warning">VENCENDO</small>
+              <h3 id="card-vencendo" class="m-0 text-warning">0</h3>
+            </div>
+            <div class="sla-col flex-fill">
+              <small class="text-danger">FORA PRAZO</small>
+              <h3 id="card-fora" class="m-0 text-danger">0</h3>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
-        <div class="card card-kpi bg-white border-start border-danger border-4 h-100">
-          <small class="text-muted fw-bold">FORA DO PRAZO</small>
-          <h3 id="card-fora" class="m-0 text-danger">0</h3>
+
+      <!-- 3. TRATATIVAS (IN-LOCO) -->
+      <div style="flex: 1 1 12%; min-width: 125px;">
+        <div class="card card-kpi bg-white border-start border-success border-4 h-100">
+          <small class="text-muted fw-bold">TRATATIVAS (IN-LOCO)</small>
+          <h3 id="card-inloco" class="m-0 text-success">0</h3>
         </div>
       </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
+
+      <!-- 4. EM DESLOCAMENTO -->
+      <div style="flex: 1 1 11%; min-width: 110px;">
         <div class="card card-kpi bg-white border-start border-info border-4 h-100">
           <small class="text-muted fw-bold">EM DESLOCAMENTO</small>
           <h3 id="card-deslocamento" class="m-0 text-info">0</h3>
         </div>
       </div>
-      <!-- CARD VERDE: TÉC. TRATATIVAS (IN LOCO) + AGUARDANDO BAIXA ASTRO -->
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 14%;">
-        <div class="card card-kpi bg-white border-start border-success border-4 h-100">
-          <small class="text-muted fw-bold">TÉC. TRATATIVAS (IN LOCO)</small>
-          <h3 id="card-inloco" class="m-0 text-success">0</h3>
-        </div>
-      </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
+
+      <!-- 5. REDE EXTERNA -->
+      <div style="flex: 1 1 11%; min-width: 105px;">
         <div class="card card-kpi bg-white border-start border-4 h-100" style="border-left-color: #6f42c1 !important;">
           <small class="text-muted fw-bold">REDE EXTERNA</small>
           <h3 id="card-rede-externa" class="m-0" style="color: #6f42c1;">0</h3>
         </div>
       </div>
-      <!-- CARD LARANJA: AGUARD. LIBERAÇÃO ACESSO + RESTRIÇÃO DE ACESSO -->
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 14%;">
-        <div class="card card-kpi bg-white border-start border-4 h-100" style="border-left-color: #fd7e14 !important;">
-          <small class="text-muted fw-bold">AGUARD. LIBERAÇÃO ACESSO</small>
-          <h3 id="card-liberacao-acesso" class="m-0" style="color: #fd7e14;">0</h3>
-        </div>
-      </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
+
+      <!-- 6. GMG ACOPL. -->
+      <div style="flex: 1 1 10%; min-width: 100px;">
         <div class="card card-kpi bg-white border-start border-success border-4 h-100" style="border-left-color: #198754 !important;">
-          <small class="text-muted fw-bold">GMG ACOPLADO</small>
+          <small class="text-muted fw-bold">GMG ACOPL.</small>
           <h3 id="card-gmg" class="m-0 text-success">0</h3>
         </div>
       </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
+
+      <!-- 7. GMG EM DESLOCAMENTO (DEM DESLOCAMENTO) -->
+      <div style="flex: 1 1 12%; min-width: 125px;">
+        <div class="card card-kpi bg-white border-start border-4 h-100" style="border-left-color: #0dcaf0 !important;">
+          <small class="text-muted fw-bold">DEM DESLOCAMENTO</small>
+          <h3 id="card-gmg-deslocamento" class="m-0 text-info">0</h3>
+        </div>
+      </div>
+
+      <!-- 8. FILA DE ATENDIMENTO -->
+      <div style="flex: 1 1 14%; min-width: 130px;">
         <div class="card card-kpi bg-white border-start border-secondary border-4 h-100">
           <small class="text-muted fw-bold">FILA DE ATENDIMENTO</small>
           <h3 id="card-fila-atendimento" class="m-0 text-secondary">0</h3>
         </div>
       </div>
+
     </div>
 
     <!-- FILTROS COMPACTOS -->
@@ -515,7 +567,6 @@
         .replace(/gerÃƒÂ¢ncia|gerÃ¢ncia/g, "gerência");
     }
 
-    // Normaliza variações para padronização interna e de exibição
     function normalizarStatus(statusBruto) {
       const s = (statusBruto || "").trim();
       const sLower = s.toLowerCase();
@@ -530,6 +581,12 @@
       }
       if (sLower === "análise de mão de obra" || sLower === "analise de mao de obra" || sLower === "aguardando sobressalente" || sLower === "fila de atendimento") {
         return "Fila de Atendimento";
+      }
+      if (sLower === "com gmg acoplado" || sLower === "gmg acoplado" || sLower === "gmg acopl.") {
+        return "Com GMG acoplado";
+      }
+      if (sLower === "gmg em deslocamento" || sLower === "dem deslocamento" || sLower === "deslocamento gmg") {
+        return "GMG em deslocamento";
       }
       if (sLower === "concluído" || sLower === "concluido" || sLower === "encerrado") {
         return "Encerrado";
@@ -685,25 +742,39 @@
         return atendeEncerramento && atendeDdd && atendePrio && atendeSla && atendeRede && atendeStatusOp && atendeBusca;
       });
 
-      // CARDS COM AGRUPAMENTO SOLICITADO
+      // 1. TOTAL TA
       document.getElementById('card-total').innerText = dadosFiltradosAtuais.length;
-      document.getElementById('card-vencendo').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('VENCENDO')).length;
-      document.getElementById('card-fora').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length;
-      document.getElementById('card-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Em deslocamento').length;
-      
-      // REGRA: "Aguardando baixa do Astro" entra na contagem de "Técnico em Tratativas"
+
+      // 2. SLA TRIPLO (NO PRAZO | VENCENDO | FORA)
+      const countVencendo = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('VENCENDO')).length;
+      const countFora = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length;
+      const countNoPrazo = dadosFiltradosAtuais.filter(d => {
+        const s = (d.status_sla || '').toUpperCase();
+        return s.includes('NO PRAZO') || s.includes('DENTRO') || (!s.includes('VENCENDO') && !s.includes('FORA'));
+      }).length;
+
+      document.getElementById('card-no-prazo').innerText = countNoPrazo;
+      document.getElementById('card-vencendo').innerText = countVencendo;
+      document.getElementById('card-fora').innerText = countFora;
+
+      // 3. TRATATIVAS (IN-LOCO) + AGUARDANDO BAIXA ASTRO
       document.getElementById('card-inloco').innerText = dadosFiltradosAtuais.filter(d => 
         d.status_atendimento === 'Técnico em Tratativas (in loco)' || d.status_atendimento === 'Aguardando baixa do Astro'
       ).length;
-      
-      document.getElementById('card-rede-externa').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Rede Externa').length;
-      
-      // REGRA: "Restrição de Acesso" entra como "Aguard. Liberação Acesso"
-      document.getElementById('card-liberacao-acesso').innerText = dadosFiltradosAtuais.filter(d => 
-        d.status_atendimento === 'Aguard. Liberação Acesso' || d.status_atendimento === 'Restrição de Acesso'
-      ).length;
 
+      // 4. EM DESLOCAMENTO
+      document.getElementById('card-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Em deslocamento').length;
+
+      // 5. REDE EXTERNA
+      document.getElementById('card-rede-externa').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Rede Externa').length;
+
+      // 6. GMG ACOPL.
       document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
+
+      // 7. GMG EM DESLOCAMENTO (DEM DESLOCAMENTO)
+      document.getElementById('card-gmg-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'GMG em deslocamento').length;
+
+      // 8. FILA DE ATENDIMENTO
       document.getElementById('card-fila-atendimento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Fila de Atendimento').length;
 
       renderizarGraficoDdd(dadosFiltradosAtuais);
@@ -744,7 +815,6 @@
         let statusBadgeClass = 'badge bg-info text-dark';
         const statusAtual = d.status_atendimento;
 
-        // CORES DAS TAGS NO GRID
         if (statusAtual === 'Pendente' || statusAtual === 'Aguardando Técnico') {
           statusBadgeClass = 'badge badge-status-pendente';
         } else if (statusAtual === 'Técnico em Tratativas (in loco)' || statusAtual === 'Aguardando baixa do Astro') {
@@ -757,6 +827,10 @@
           statusBadgeClass = 'badge bg-dark text-white';
         } else if (statusAtual === 'Fila de Atendimento') {
           statusBadgeClass = 'badge bg-secondary text-white';
+        } else if (statusAtual === 'Com GMG acoplado') {
+          statusBadgeClass = 'badge bg-success text-white';
+        } else if (statusAtual === 'GMG em deslocamento') {
+          statusBadgeClass = 'badge bg-info text-dark';
         }
 
         let inlineStyle = (statusAtual === 'Rede Externa') ? 'style="background-color: #6f42c1;"' : 
