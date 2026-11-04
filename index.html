@@ -27,33 +27,22 @@
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
     }
     .header-icon-box {
-      background-color: #0d2238;
-      border: 1px solid #16385c;
+      background-color: rgba(25, 135, 84, 0.15);
+      border: 1px solid rgba(25, 135, 84, 0.4);
       width: 48px;
       height: 48px;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
-      color: #0dcaf0;
+      font-size: 1.55rem;
+      color: #20c997; /* Verde vivo de transmissão */
     }
     .header-title {
       font-size: 1.35rem;
       font-weight: 800;
       letter-spacing: -0.3px;
       margin-bottom: 2px;
-    }
-    .badge-sheets-live {
-      background-color: rgba(13, 202, 240, 0.15);
-      color: #0dcaf0;
-      border: 1px solid rgba(13, 202, 240, 0.35);
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
-      vertical-align: middle;
-      margin-left: 8px;
     }
     .header-subtitle {
       color: #8da2be;
@@ -82,7 +71,7 @@
     }
     .sync-subtext {
       font-size: 0.72rem;
-      color: #0dcaf0;
+      color: #20c997;
       margin-top: 1px;
     }
     .btn-header {
@@ -133,13 +122,14 @@
     <!-- CABEÇALHO PADRONIZADO -->
     <div class="header-painel d-flex flex-wrap justify-content-between align-items-center gap-3">
       <div class="d-flex align-items-center gap-3">
+        <!-- ÍCONE DE SINAL EM VERDE CONFORME SOLICITADO -->
         <div class="header-icon-box shadow-sm">
-          <i class="bi bi-clock-history"></i>
+          <i class="bi bi-broadcast"></i>
         </div>
         <div>
+          <!-- TÍTULO SEM O BADGE DA IMAGEM 2 -->
           <div class="header-title">
             CONTROLE DE ORDENS DE SERVIÇO
-            <span class="badge-sheets-live"><i class="bi bi-broadcast me-1"></i>Google Sheets Live • Aba Analítico</span>
           </div>
           <p class="header-subtitle">Contrato Vivo / TEL • Acompanhamento Operacional, SLA & Eficiência em Tempo Real</p>
         </div>
@@ -349,8 +339,6 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqo-oRoCVNXTJE8RxAnfQcNWPty232zFuVArT6l-1w4CnsSLO7YETVeBsKPWh0SkwX8wVg-VT7Vb80/pub?gid=2115875129&single=true&output=csv";
-    
-    // Cole aqui a URL gerada em Apps Script > Implantar > Gerenciar Implantações > App da Web
     const URL_APPS_SCRIPT_WEBAPP = "COLE_AQUI_A_URL_DO_WEBAPP_APPS_SCRIPT";
 
     let dadosGlobais = [];
@@ -383,10 +371,11 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
+          // Extrai o valor da Coluna T ou U caso venha como cabeçalho ou nas primeiras linhas
           let dataControlePlanilha = "";
           if (results.data.length > 0) {
-            const primeiraLinha = results.data[0];
-            dataControlePlanilha = primeiraLinha["Última Atualização"] || primeiraLinha["Ultima Atualizacao"] || primeiraLinha["__parsed_extra"]?.[0] || "";
+            const linha1 = results.data[0];
+            dataControlePlanilha = linha1["Última Atualização"] || linha1["Ultima Atualizacao"] || linha1["Qtd TAs Baixado"] || linha1["__parsed_extra"]?.[0] || "";
           }
 
           dadosGlobais = results.data.map(r => {
@@ -416,11 +405,15 @@
           popularFiltros(dadosGlobais);
           renderizar();
 
+          // Exibe o horário da sincronização e os dados de atualização da base da Coluna T/U
           const agora = new Date().toTimeString().split(' ')[0];
           document.getElementById('txt-ultima-sync').innerText = agora;
-          document.getElementById('txt-base-atualizada').innerText = dataControlePlanilha 
-            ? `Base atualizada: ${dataControlePlanilha}` 
-            : `Base atualizada: ${dadosGlobais.length} TAs carregados`;
+          
+          if (dataControlePlanilha) {
+            document.getElementById('txt-base-atualizada').innerText = `Base atualizada: ${dataControlePlanilha}`;
+          } else {
+            document.getElementById('txt-base-atualizada').innerText = `Base atualizada: ${dadosGlobais.length} TAs`;
+          }
         },
         error: function(err) {
           document.getElementById('txt-ultima-sync').innerText = "Erro!";
@@ -474,14 +467,14 @@
         return atendeDdd && atendePrio && atendeSla && atendeRede && atendeStatusOp && atendeBusca;
       });
 
-      // Atualiza Cards
+      // Cards
       document.getElementById('card-total').innerText = dadosFiltradosAtuais.length;
       document.getElementById('card-vencendo').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('VENCENDO')).length;
       document.getElementById('card-fora').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length;
       document.getElementById('card-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Em deslocamento').length;
-      document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
       document.getElementById('card-rede-externa').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Rede Externa').length;
       document.getElementById('card-liberacao-acesso').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Aguard. Liberação Acesso').length;
+      document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
       document.getElementById('card-mao-de-obra').innerText = dadosFiltradosAtuais.filter(d => 
         d.status_atendimento === 'Análise de Mão de Obra' || d.status_atendimento === 'Aguardando sobressalente'
       ).length;
