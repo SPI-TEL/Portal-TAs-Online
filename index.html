@@ -122,7 +122,24 @@
     }
     .badge-vencendo { background-color: #ffc107; color: #000; font-weight: bold; }
     .badge-fora { background-color: #dc3545; color: #fff; font-weight: bold; }
-    .badge-dentro { background-color: #198754; color: #fff; }
+    
+    /* NO PRAZO: SEM FUNDO CINZA, APENAS LETRA VERDE ESCURO */
+    .badge-no-prazo {
+      background: transparent !important;
+      color: #0f5132 !important; /* Verde escuro */
+      font-weight: 800;
+      font-size: 0.85rem;
+      border: none !important;
+      padding: 0;
+    }
+
+    /* PENDENTE: EM CINZA */
+    .badge-status-pendente {
+      background-color: #6c757d !important;
+      color: #ffffff !important;
+      font-weight: 600;
+    }
+
     .table td, .table th { vertical-align: middle; }
     .obs-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -356,7 +373,7 @@
               <select id="modal-tipo-rede" class="form-select form-select-sm">
                 <option value="">Selecione...</option>
                 <option value="Móvel">Móvel</option>
-                <option value="Fixa">Fixa</option>
+                <option value="FIXA">FIXA</option>
                 <option value="Ambos">Ambos</option>
                 <option value="Backhaul">Backhaul</option>
                 <option value="Acesso">Acesso</option>
@@ -403,7 +420,6 @@
     const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqo-oRoCVNXTJE8RxAnfQcNWPty232zFuVArT6l-1w4CnsSLO7YETVeBsKPWh0SkwX8wVg-VT7Vb80/pub?gid=2115875129&single=true&output=csv";
     const URL_APPS_SCRIPT_WEBAPP = "COLE_AQUI_A_URL_DO_WEBAPP_APPS_SCRIPT";
 
-    // CONTROLE DE PAGINAÇÃO
     const ITENS_POR_PAGINA = 70;
     let paginaAtual = 1;
 
@@ -422,6 +438,26 @@
         .replace(/PENÃƒÂPOLIS|PENÃPOLIS/g, "PENÁPOLIS")
         .replace(/mÃƒÂ³dulos|mÃ³dulos/g, "módulos")
         .replace(/gerÃƒÂ¢ncia|gerÃ¢ncia/g, "gerência");
+    }
+
+    // Avalia o tempo gestor: converte em segundos para comparar se é menor que 2 horas (7200 segundos)
+    function obterEstiloTempoGestor(tempoStr) {
+      if (!tempoStr) return 'color: #111827; font-weight: 600;';
+      const partes = String(tempoStr).trim().split(':');
+      if (partes.length >= 2) {
+        const horas = parseInt(partes[0], 10) || 0;
+        const minutos = parseInt(partes[1], 10) || 0;
+        const segundos = partes.length > 2 ? (parseInt(partes[2], 10) || 0) : 0;
+        const totalSegundos = (horas * 3600) + (minutos * 60) + segundos;
+
+        // < 2 horas: PRETO; >= 2 horas: VERMELHO
+        if (totalSegundos < 7200) {
+          return 'color: #111827; font-weight: 600;'; // Preto
+        } else {
+          return 'color: #dc3545; font-weight: 600;'; // Vermelho
+        }
+      }
+      return 'color: #111827; font-weight: 600;';
     }
 
     window.onload = function() {
@@ -445,13 +481,23 @@
           }
 
           dadosGlobais = results.data.map(r => {
-            const tipoRedeExtraido = r["TIpo Rede"] || r["Tipo Rede"] || r["Tipo de Rede"] || r["Rede"] || "";
+            const siteLimpo = (r["SITE"] || "").trim();
+            let tipoRedePlanilha = (r["TIpo Rede"] || r["Tipo Rede"] || r["Tipo de Rede"] || r["Rede"] || "").trim();
+
+            // REGRA: Se não estiver preenchido na planilha, define pelo tamanho do Site
+            if (!tipoRedePlanilha) {
+              if (siteLimpo.length === 2) {
+                tipoRedePlanilha = "FIXA";
+              } else if (siteLimpo.length === 3) {
+                tipoRedePlanilha = "Móvel";
+              }
+            }
 
             return {
               ta: r["TA"] || "",
               ddd: r["DDD"] || "",
               coordenador: limparTexto(r["Coordenador"] || ""),
-              site: r["SITE"] || "",
+              site: siteLimpo,
               localidade: limparTexto(r["Localidade"] || ""),
               site_nome: limparTexto(r["SITE Nome"] || ""),
               qtd_ta: r["QTD TA"] || "",
@@ -461,7 +507,7 @@
               prioridade: (r["Prioridade"] || "").trim(),
               grupo_responsavel: r["Grupo Responsavel"] || "",
               status_sla: r["STATUS SLA"] || "",
-              tipo_rede: tipoRedeExtraido.trim(),
+              tipo_rede: tipoRedePlanilha,
               status_atendimento: (r["Status Atendimento"] || "Pendente").trim(),
               previsao: r["Previsão"] || "",
               observacao: r["Observação"] || ""
@@ -507,7 +553,7 @@
     }
 
     function aplicarFiltros() {
-      paginaAtual = 1; // Sempre volta para a primeira página ao filtrar
+      paginaAtual = 1;
       renderizar();
     }
 
@@ -531,7 +577,7 @@
           (d.alarme || '').toLowerCase().includes(fBusca) ||
           (d.ta || '').toLowerCase().includes(fBusca);
 
-        return atendeDdd && atendePrio && atendeSla && atendeRede && atendeStatusOp && atendeBusca;
+        return atendeDdd && atendePrio && atendeSla && atendeStatusOp && atendeBusca;
       });
 
       // Cards
@@ -546,13 +592,10 @@
         d.status_atendimento === 'Análise de Mão de Obra' || d.status_atendimento === 'Aguardando sobressalente'
       ).length;
 
-      // Renderiza gráficos
       renderizarGraficoDdd(dadosFiltradosAtuais);
       renderizarGraficoPrioridades(dadosFiltradosAtuais);
 
-      // ==========================================
-      // PAGINAÇÃO DE 70 ITENS NO GRID
-      // ==========================================
+      // Paginação de 70 TAs
       const totalRegistros = dadosFiltradosAtuais.length;
       const totalPaginas = Math.ceil(totalRegistros / ITENS_POR_PAGINA) || 1;
 
@@ -563,7 +606,6 @@
       const fim = Math.min(inicio + ITENS_POR_PAGINA, totalRegistros);
       const dadosPagina = dadosFiltradosAtuais.slice(inicio, fim);
 
-      // Atualiza texto informativo da paginação
       const infoPaginacao = document.getElementById('txt-info-paginacao');
       if (totalRegistros > 0) {
         infoPaginacao.innerText = `Mostrando ${inicio + 1} até ${fim} de ${totalRegistros} TAs (Página ${paginaAtual} de ${totalPaginas})`;
@@ -571,24 +613,29 @@
         infoPaginacao.innerText = `Nenhum TA encontrado com os filtros selecionados.`;
       }
 
-      // Monta as linhas da tabela
       const tbody = document.getElementById('tabela-corpo');
       tbody.innerHTML = '';
 
       dadosPagina.forEach(d => {
+        // SLA: "NO PRAZO" FICA SEM FUNDO CINZA E COM LETRA VERDE ESCURO
         let slaBadgeClass = 'badge bg-secondary';
         const sla = (d.status_sla || '').toUpperCase();
-        if (sla.includes('VENCENDO')) slaBadgeClass = 'badge badge-vencendo';
-        else if (sla.includes('FORA')) slaBadgeClass = 'badge badge-fora';
-        else if (sla.includes('DENTRO')) slaBadgeClass = 'badge badge-dentro';
+        if (sla.includes('VENCENDO')) {
+          slaBadgeClass = 'badge badge-vencendo';
+        } else if (sla.includes('FORA')) {
+          slaBadgeClass = 'badge badge-fora';
+        } else if (sla.includes('NO PRAZO') || sla.includes('DENTRO')) {
+          slaBadgeClass = 'badge-no-prazo';
+        }
 
+        // STATUS: PENDENTE FICA EM CINZA
         let statusBadgeClass = 'badge bg-info text-dark';
         const statusAtual = (d.status_atendimento || '').trim();
 
-        if (statusAtual.toLowerCase() === 'em tratativa') {
+        if (statusAtual.toLowerCase() === 'pendente') {
+          statusBadgeClass = 'badge badge-status-pendente';
+        } else if (statusAtual.toLowerCase() === 'em tratativa') {
           statusBadgeClass = 'badge bg-success text-white';
-        } else if (statusAtual === 'Pendente') {
-          statusBadgeClass = 'badge bg-info text-dark';
         } else if (statusAtual === 'Rede Externa') {
           statusBadgeClass = 'badge text-white';
         } else if (statusAtual === 'Aguard. Liberação Acesso') {
@@ -601,6 +648,9 @@
 
         let inlineStyle = (statusAtual === 'Rede Externa') ? 'style="background-color: #6f42c1;"' : 
                           (statusAtual === 'Aguard. Liberação Acesso') ? 'style="background-color: #fd7e14;"' : '';
+
+        // TEMPO GESTOR: < 2h PRETO, >= 2h VERMELHO
+        const estiloTempo = obterEstiloTempoGestor(d.tempo_gestor);
 
         tbody.innerHTML += `
           <tr>
@@ -617,7 +667,7 @@
               <small class="text-muted">${d.site_nome}</small>
             </td>
             <td><small>${d.alarme}</small></td>
-            <td><code>${d.tempo_gestor}</code></td>
+            <td><code style="${estiloTempo}">${d.tempo_gestor}</code></td>
             <td><span class="${slaBadgeClass}">${d.status_sla}</span></td>
             <td><span class="badge bg-light text-dark border">${d.tipo_rede || '-'}</span></td>
             <td><span class="${statusBadgeClass}" ${inlineStyle}>${d.status_atendimento}</span></td>
@@ -627,18 +677,15 @@
         `;
       });
 
-      // Renderiza botões da paginação
       renderizarBotoesPaginacao(totalPaginas);
     }
 
-    // BOTÕES NUMERADOS DE NAVEGAÇÃO
     function renderizarBotoesPaginacao(totalPaginas) {
       const ul = document.getElementById('ul-paginacao');
       ul.innerHTML = '';
 
       if (totalPaginas <= 1) return;
 
-      // Botão Anterior
       ul.innerHTML += `
         <li class="page-item ${paginaAtual === 1 ? 'disabled' : ''}">
           <a class="page-link" href="javascript:void(0)" onclick="mudarPagina(${paginaAtual - 1})">
@@ -647,7 +694,6 @@
         </li>
       `;
 
-      // Janela de páginas vizinhas
       let paginaInicial = Math.max(1, paginaAtual - 2);
       let paginaFinal = Math.min(totalPaginas, paginaAtual + 2);
 
@@ -673,7 +719,6 @@
         ul.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="mudarPagina(${totalPaginas})">${totalPaginas}</a></li>`;
       }
 
-      // Botão Próximo
       ul.innerHTML += `
         <li class="page-item ${paginaAtual === totalPaginas ? 'disabled' : ''}">
           <a class="page-link" href="javascript:void(0)" onclick="mudarPagina(${paginaAtual + 1})">
@@ -686,11 +731,9 @@
     function mudarPagina(novaPagina) {
       paginaAtual = novaPagina;
       renderizar();
-      // Rola suavemente até o início do grid
       document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // GRÁFICO 1: DDD vs PENDENTE
     function renderizarGraficoDdd(dados) {
       const dddsUnicos = [...new Set(dados.map(d => d.ddd))].filter(Boolean).sort();
       const volumeTotal = [];
@@ -751,7 +794,6 @@
       });
     }
 
-    // GRÁFICO 2: BARRAS HORIZONTAIS DE PRIORIDADE COM VOLUME E %
     function renderizarGraficoPrioridades(dados) {
       const labelsPrio = ['P1', 'P2', 'P3', 'P4'];
       const totalGeral = dados.length;
