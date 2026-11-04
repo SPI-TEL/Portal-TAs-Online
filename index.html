@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Ordens de Servico - Vivo / TEL</title>
+  <title>Acompanhamento TAs - Online</title>
   
   <!-- META TAGS ANTI-CACHE -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -13,7 +13,7 @@
   <!-- SCRIPT DE AUTO-ATUALIZAÇÃO FORÇADA DE CACHE -->
   <script>
     (function() {
-      const VERSAO_ATUAL = "1.2.0";
+      const VERSAO_ATUAL = "1.4.0";
       const versaoArmazenada = localStorage.getItem("app_versao_portal_tas");
 
       if (versaoArmazenada !== VERSAO_ATUAL) {
@@ -242,9 +242,9 @@
         </div>
         <div>
           <div class="header-title">
-            CONTROLE DE ORDENS DE SERVIÇO
+            Acompanhamento TAs - Online
           </div>
-          <p class="header-subtitle">Contrato Vivo / TEL • Acompanhamento Operacional, SLA &amp; Eficiência em Tempo Real</p>
+          <p class="header-subtitle">• Acompanhamento Operacional, SLA &amp; Eficiência em Tempo Real</p>
         </div>
       </div>
 
@@ -269,7 +269,7 @@
       </div>
     </div>
 
-    <!-- CARDS TOTALIZADORES COMPACTOS (9 CARDS) -->
+    <!-- CARDS TOTALIZADORES COMPACTOS -->
     <div class="row g-2 mb-3">
       <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
         <div class="card card-kpi bg-white border-start border-primary border-4 h-100">
@@ -295,7 +295,7 @@
           <h3 id="card-deslocamento" class="m-0 text-info">0</h3>
         </div>
       </div>
-      <!-- NOVO CARD VERDE: TÉCNICO EM TRATATIVAS (IN LOCO) -->
+      <!-- CARD VERDE: TÉC. TRATATIVAS (IN LOCO) + AGUARDANDO BAIXA ASTRO -->
       <div class="col-6 col-md-3 col-xl" style="flex: 1 0 14%;">
         <div class="card card-kpi bg-white border-start border-success border-4 h-100">
           <small class="text-muted fw-bold">TÉC. TRATATIVAS (IN LOCO)</small>
@@ -308,6 +308,7 @@
           <h3 id="card-rede-externa" class="m-0" style="color: #6f42c1;">0</h3>
         </div>
       </div>
+      <!-- CARD LARANJA: AGUARD. LIBERAÇÃO ACESSO + RESTRIÇÃO DE ACESSO -->
       <div class="col-6 col-md-3 col-xl" style="flex: 1 0 14%;">
         <div class="card card-kpi bg-white border-start border-4 h-100" style="border-left-color: #fd7e14 !important;">
           <small class="text-muted fw-bold">AGUARD. LIBERAÇÃO ACESSO</small>
@@ -320,7 +321,6 @@
           <h3 id="card-gmg" class="m-0 text-success">0</h3>
         </div>
       </div>
-      <!-- CARD MODIFICADO: FILA DE ATENDIMENTO -->
       <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
         <div class="card card-kpi bg-white border-start border-secondary border-4 h-100">
           <small class="text-muted fw-bold">FILA DE ATENDIMENTO</small>
@@ -332,7 +332,6 @@
     <!-- FILTROS COMPACTOS -->
     <div class="card card-filtros bg-white">
       <div class="row g-2 align-items-end">
-        <!-- NOVO FILTRO: ENCERRAMENTO (PADRÃO: ATIVOS) -->
         <div class="col-md-2">
           <label class="filtro-label text-primary">Encerramento</label>
           <select id="filtro-encerramento" class="form-select form-select-sm fw-bold border-primary" onchange="aplicarFiltros()">
@@ -466,9 +465,11 @@
             <select id="modal-status-op" class="form-select form-select-sm">
               <option value="Pendente">Pendente</option>
               <option value="Técnico em Tratativas (in loco)">Técnico em Tratativas (in loco)</option>
+              <option value="Aguardando baixa do Astro">Aguardando baixa do Astro</option>
               <option value="Em deslocamento">Em deslocamento</option>
               <option value="Rede Externa">Rede Externa</option>
               <option value="Aguard. Liberação Acesso">Aguard. Liberação Acesso</option>
+              <option value="Restrição de Acesso">Restrição de Acesso</option>
               <option value="Com GMG acoplado">Com GMG acoplado</option>
               <option value="GMG em deslocamento">GMG em deslocamento</option>
               <option value="Fila de Atendimento">Fila de Atendimento</option>
@@ -514,12 +515,18 @@
         .replace(/gerÃƒÂ¢ncia|gerÃ¢ncia/g, "gerência");
     }
 
-    // Normaliza variações antigas de status salvas na planilha
+    // Normaliza variações para padronização interna e de exibição
     function normalizarStatus(statusBruto) {
       const s = (statusBruto || "").trim();
       const sLower = s.toLowerCase();
       if (sLower === "em tratativa" || sLower === "em atendimento" || sLower === "técnico em tratativas (in loco)" || sLower === "tecnico em tratativas (in loco)") {
         return "Técnico em Tratativas (in loco)";
+      }
+      if (sLower === "aguardando baixa do astro" || sLower === "aguardando baixa astro") {
+        return "Aguardando baixa do Astro";
+      }
+      if (sLower === "restrição de acesso" || sLower === "restricao de acesso") {
+        return "Restrição de Acesso";
       }
       if (sLower === "análise de mão de obra" || sLower === "analise de mao de obra" || sLower === "aguardando sobressalente" || sLower === "fila de atendimento") {
         return "Fila de Atendimento";
@@ -656,7 +663,6 @@
       const fBusca = (document.getElementById('filtro-busca').value || '').toLowerCase();
 
       dadosFiltradosAtuais = dadosGlobais.filter(d => {
-        // Regra do Filtro de Encerramento (Ativos vs Encerrados)
         const isEncerrado = d.status_atendimento === 'Encerrado';
         let atendeEncerramento = true;
         if (fEncerramento === 'ativos') {
@@ -679,20 +685,25 @@
         return atendeEncerramento && atendeDdd && atendePrio && atendeSla && atendeRede && atendeStatusOp && atendeBusca;
       });
 
-      // Atualiza Cards com a base visível filtrada
+      // CARDS COM AGRUPAMENTO SOLICITADO
       document.getElementById('card-total').innerText = dadosFiltradosAtuais.length;
       document.getElementById('card-vencendo').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('VENCENDO')).length;
       document.getElementById('card-fora').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length;
       document.getElementById('card-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Em deslocamento').length;
       
-      // Card Técnico em Tratativas (in loco)
-      document.getElementById('card-inloco').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Técnico em Tratativas (in loco)').length;
+      // REGRA: "Aguardando baixa do Astro" entra na contagem de "Técnico em Tratativas"
+      document.getElementById('card-inloco').innerText = dadosFiltradosAtuais.filter(d => 
+        d.status_atendimento === 'Técnico em Tratativas (in loco)' || d.status_atendimento === 'Aguardando baixa do Astro'
+      ).length;
       
       document.getElementById('card-rede-externa').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Rede Externa').length;
-      document.getElementById('card-liberacao-acesso').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Aguard. Liberação Acesso').length;
-      document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
       
-      // Card Fila de Atendimento
+      // REGRA: "Restrição de Acesso" entra como "Aguard. Liberação Acesso"
+      document.getElementById('card-liberacao-acesso').innerText = dadosFiltradosAtuais.filter(d => 
+        d.status_atendimento === 'Aguard. Liberação Acesso' || d.status_atendimento === 'Restrição de Acesso'
+      ).length;
+
+      document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
       document.getElementById('card-fila-atendimento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Fila de Atendimento').length;
 
       renderizarGraficoDdd(dadosFiltradosAtuais);
@@ -733,13 +744,14 @@
         let statusBadgeClass = 'badge bg-info text-dark';
         const statusAtual = d.status_atendimento;
 
-        if (statusAtual === 'Pendente') {
+        // CORES DAS TAGS NO GRID
+        if (statusAtual === 'Pendente' || statusAtual === 'Aguardando Técnico') {
           statusBadgeClass = 'badge badge-status-pendente';
-        } else if (statusAtual === 'Técnico em Tratativas (in loco)') {
+        } else if (statusAtual === 'Técnico em Tratativas (in loco)' || statusAtual === 'Aguardando baixa do Astro') {
           statusBadgeClass = 'badge bg-success text-white';
         } else if (statusAtual === 'Rede Externa') {
           statusBadgeClass = 'badge text-white';
-        } else if (statusAtual === 'Aguard. Liberação Acesso') {
+        } else if (statusAtual === 'Aguard. Liberação Acesso' || statusAtual === 'Restrição de Acesso') {
           statusBadgeClass = 'badge text-white';
         } else if (statusAtual === 'Encerrado') {
           statusBadgeClass = 'badge bg-dark text-white';
@@ -748,7 +760,7 @@
         }
 
         let inlineStyle = (statusAtual === 'Rede Externa') ? 'style="background-color: #6f42c1;"' : 
-                          (statusAtual === 'Aguard. Liberação Acesso') ? 'style="background-color: #fd7e14;"' : '';
+                          (statusAtual === 'Aguard. Liberação Acesso' || statusAtual === 'Restrição de Acesso') ? 'style="background-color: #fd7e14;"' : '';
 
         const estiloTempo = obterEstiloTempoGestor(d.tempo_gestor);
 
@@ -842,7 +854,7 @@
       dddsUnicos.forEach(ddd => {
         const itensDdd = dados.filter(d => d.ddd === ddd);
         volumeTotal.push(itensDdd.length);
-        volumePendente.push(itensDdd.filter(d => d.status_atendimento === 'Pendente').length);
+        volumePendente.push(itensDdd.filter(d => d.status_atendimento === 'Pendente' || d.status_atendimento === 'Aguardando Técnico').length);
       });
 
       const ctx = document.getElementById('graficoDddSla').getContext('2d');
