@@ -10,18 +10,14 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <!-- SCRIPT DE AUTO-ATUALIZAÇÃO FORÇADA DE CACHE (RODA ANTES DE TUDO) -->
+  <!-- SCRIPT DE AUTO-ATUALIZAÇÃO FORÇADA DE CACHE -->
   <script>
     (function() {
-      // Toda vez que você subir mudanças visuais importantes, apenas mude este número (ex: "1.1.1", "1.2.0"):
-      const VERSAO_ATUAL = "1.1.0";
-      
+      const VERSAO_ATUAL = "1.2.0";
       const versaoArmazenada = localStorage.getItem("app_versao_portal_tas");
 
       if (versaoArmazenada !== VERSAO_ATUAL) {
         localStorage.setItem("app_versao_portal_tas", VERSAO_ATUAL);
-        
-        // Se a página já não tiver sido recarregada com o parâmetro de bypass
         if (!window.location.search.includes("v=" + VERSAO_ATUAL)) {
           const separador = window.location.search ? "&" : "?";
           window.location.replace(window.location.pathname + window.location.search + separador + "v=" + VERSAO_ATUAL);
@@ -119,11 +115,11 @@
       border: none; 
       border-radius: 8px; 
       box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
-      padding: 8px 12px !important;
+      padding: 8px 10px !important;
     }
     .card-kpi small {
-      font-size: 0.65rem !important;
-      letter-spacing: 0.3px;
+      font-size: 0.62rem !important;
+      letter-spacing: 0.2px;
       display: block;
       line-height: 1.1;
       white-space: nowrap;
@@ -131,7 +127,7 @@
       text-overflow: ellipsis;
     }
     .card-kpi h3 {
-      font-size: 1.4rem !important;
+      font-size: 1.35rem !important;
       font-weight: 800;
       line-height: 1.2;
       margin-top: 3px !important;
@@ -273,21 +269,21 @@
       </div>
     </div>
 
-    <!-- CARDS TOTALIZADORES COMPACTOS -->
+    <!-- CARDS TOTALIZADORES COMPACTOS (9 CARDS) -->
     <div class="row g-2 mb-3">
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
         <div class="card card-kpi bg-white border-start border-primary border-4 h-100">
           <small class="text-muted fw-bold">TOTAL TAs</small>
           <h3 id="card-total" class="m-0 text-primary">0</h3>
         </div>
       </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
         <div class="card card-kpi bg-white border-start border-warning border-4 h-100">
           <small class="text-muted fw-bold">VENCENDO</small>
           <h3 id="card-vencendo" class="m-0 text-warning">0</h3>
         </div>
       </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
         <div class="card card-kpi bg-white border-start border-danger border-4 h-100">
           <small class="text-muted fw-bold">FORA DO PRAZO</small>
           <h3 id="card-fora" class="m-0 text-danger">0</h3>
@@ -299,28 +295,36 @@
           <h3 id="card-deslocamento" class="m-0 text-info">0</h3>
         </div>
       </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 13%;">
+      <!-- NOVO CARD VERDE: TÉCNICO EM TRATATIVAS (IN LOCO) -->
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 14%;">
+        <div class="card card-kpi bg-white border-start border-success border-4 h-100">
+          <small class="text-muted fw-bold">TÉC. TRATATIVAS (IN LOCO)</small>
+          <h3 id="card-inloco" class="m-0 text-success">0</h3>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
         <div class="card card-kpi bg-white border-start border-4 h-100" style="border-left-color: #6f42c1 !important;">
           <small class="text-muted fw-bold">REDE EXTERNA</small>
           <h3 id="card-rede-externa" class="m-0" style="color: #6f42c1;">0</h3>
         </div>
       </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 15%;">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 14%;">
         <div class="card card-kpi bg-white border-start border-4 h-100" style="border-left-color: #fd7e14 !important;">
           <small class="text-muted fw-bold">AGUARD. LIBERAÇÃO ACESSO</small>
           <h3 id="card-liberacao-acesso" class="m-0" style="color: #fd7e14;">0</h3>
         </div>
       </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 11%;">
-        <div class="card card-kpi bg-white border-start border-success border-4 h-100">
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
+        <div class="card card-kpi bg-white border-start border-success border-4 h-100" style="border-left-color: #198754 !important;">
           <small class="text-muted fw-bold">GMG ACOPLADO</small>
           <h3 id="card-gmg" class="m-0 text-success">0</h3>
         </div>
       </div>
-      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 14%;">
+      <!-- CARD MODIFICADO: FILA DE ATENDIMENTO -->
+      <div class="col-6 col-md-3 col-xl" style="flex: 1 0 10%;">
         <div class="card card-kpi bg-white border-start border-secondary border-4 h-100">
-          <small class="text-muted fw-bold">ANÁLISE MÃO DE OBRA</small>
-          <h3 id="card-mao-de-obra" class="m-0 text-secondary">0</h3>
+          <small class="text-muted fw-bold">FILA DE ATENDIMENTO</small>
+          <h3 id="card-fila-atendimento" class="m-0 text-secondary">0</h3>
         </div>
       </div>
     </div>
@@ -328,11 +332,20 @@
     <!-- FILTROS COMPACTOS -->
     <div class="card card-filtros bg-white">
       <div class="row g-2 align-items-end">
+        <!-- NOVO FILTRO: ENCERRAMENTO (PADRÃO: ATIVOS) -->
         <div class="col-md-2">
+          <label class="filtro-label text-primary">Encerramento</label>
+          <select id="filtro-encerramento" class="form-select form-select-sm fw-bold border-primary" onchange="aplicarFiltros()">
+            <option value="ativos" selected>Ativos (Padrão)</option>
+            <option value="encerrados">Encerrados</option>
+            <option value="todos">Todos</option>
+          </select>
+        </div>
+        <div class="col-md-1">
           <label class="filtro-label">DDD</label>
           <select id="filtro-ddd" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-1">
           <label class="filtro-label">Prioridade</label>
           <select id="filtro-prioridade" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todas</option></select>
         </div>
@@ -452,15 +465,14 @@
             <label class="form-label small fw-bold">Status de Atendimento:</label>
             <select id="modal-status-op" class="form-select form-select-sm">
               <option value="Pendente">Pendente</option>
-              <option value="Em tratativa">Em tratativa</option>
+              <option value="Técnico em Tratativas (in loco)">Técnico em Tratativas (in loco)</option>
               <option value="Em deslocamento">Em deslocamento</option>
               <option value="Rede Externa">Rede Externa</option>
               <option value="Aguard. Liberação Acesso">Aguard. Liberação Acesso</option>
-              <option value="Em atendimento">Em atendimento</option>
               <option value="Com GMG acoplado">Com GMG acoplado</option>
               <option value="GMG em deslocamento">GMG em deslocamento</option>
-              <option value="Análise de Mão de Obra">Análise de Mão de Obra</option>
-              <option value="Concluído">Concluído</option>
+              <option value="Fila de Atendimento">Fila de Atendimento</option>
+              <option value="Encerrado">Encerrado</option>
             </select>
           </div>
 
@@ -500,6 +512,22 @@
         .replace(/PENÃƒÂPOLIS|PENÃPOLIS/g, "PENÁPOLIS")
         .replace(/mÃƒÂ³dulos|mÃ³dulos/g, "módulos")
         .replace(/gerÃƒÂ¢ncia|gerÃ¢ncia/g, "gerência");
+    }
+
+    // Normaliza variações antigas de status salvas na planilha
+    function normalizarStatus(statusBruto) {
+      const s = (statusBruto || "").trim();
+      const sLower = s.toLowerCase();
+      if (sLower === "em tratativa" || sLower === "em atendimento" || sLower === "técnico em tratativas (in loco)" || sLower === "tecnico em tratativas (in loco)") {
+        return "Técnico em Tratativas (in loco)";
+      }
+      if (sLower === "análise de mão de obra" || sLower === "analise de mao de obra" || sLower === "aguardando sobressalente" || sLower === "fila de atendimento") {
+        return "Fila de Atendimento";
+      }
+      if (sLower === "concluído" || sLower === "concluido" || sLower === "encerrado") {
+        return "Encerrado";
+      }
+      return s || "Pendente";
     }
 
     function obterEstiloTempoGestor(tempoStr) {
@@ -552,6 +580,8 @@
               }
             }
 
+            const statusTratado = normalizarStatus(r["Status Atendimento"]);
+
             return {
               ta: r["TA"] || "",
               ddd: r["DDD"] || "",
@@ -567,7 +597,7 @@
               grupo_responsavel: r["Grupo Responsavel"] || "",
               status_sla: r["STATUS SLA"] || "",
               tipo_rede: tipoRedePlanilha,
-              status_atendimento: (r["Status Atendimento"] || "Pendente").trim(),
+              status_atendimento: statusTratado,
               previsao: r["Previsão"] || "",
               observacao: r["Observação"] || ""
             };
@@ -617,6 +647,7 @@
     }
 
     function renderizar() {
+      const fEncerramento = document.getElementById('filtro-encerramento').value;
       const fDdd = document.getElementById('filtro-ddd').value;
       const fPrio = document.getElementById('filtro-prioridade').value;
       const fSla = document.getElementById('filtro-sla').value;
@@ -625,6 +656,15 @@
       const fBusca = (document.getElementById('filtro-busca').value || '').toLowerCase();
 
       dadosFiltradosAtuais = dadosGlobais.filter(d => {
+        // Regra do Filtro de Encerramento (Ativos vs Encerrados)
+        const isEncerrado = d.status_atendimento === 'Encerrado';
+        let atendeEncerramento = true;
+        if (fEncerramento === 'ativos') {
+          atendeEncerramento = !isEncerrado;
+        } else if (fEncerramento === 'encerrados') {
+          atendeEncerramento = isEncerrado;
+        }
+
         const atendeDdd = !fDdd || String(d.ddd) === String(fDdd);
         const atendePrio = !fPrio || String(d.prioridade) === String(fPrio);
         const atendeSla = !fSla || String(d.status_sla) === String(fSla);
@@ -636,23 +676,29 @@
           (d.alarme || '').toLowerCase().includes(fBusca) ||
           (d.ta || '').toLowerCase().includes(fBusca);
 
-        return atendeDdd && atendePrio && atendeSla && atendeRede && atendeStatusOp && atendeBusca;
+        return atendeEncerramento && atendeDdd && atendePrio && atendeSla && atendeRede && atendeStatusOp && atendeBusca;
       });
 
+      // Atualiza Cards com a base visível filtrada
       document.getElementById('card-total').innerText = dadosFiltradosAtuais.length;
       document.getElementById('card-vencendo').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('VENCENDO')).length;
       document.getElementById('card-fora').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length;
       document.getElementById('card-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Em deslocamento').length;
+      
+      // Card Técnico em Tratativas (in loco)
+      document.getElementById('card-inloco').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Técnico em Tratativas (in loco)').length;
+      
       document.getElementById('card-rede-externa').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Rede Externa').length;
       document.getElementById('card-liberacao-acesso').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Aguard. Liberação Acesso').length;
       document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
-      document.getElementById('card-mao-de-obra').innerText = dadosFiltradosAtuais.filter(d => 
-        d.status_atendimento === 'Análise de Mão de Obra' || d.status_atendimento === 'Aguardando sobressalente'
-      ).length;
+      
+      // Card Fila de Atendimento
+      document.getElementById('card-fila-atendimento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Fila de Atendimento').length;
 
       renderizarGraficoDdd(dadosFiltradosAtuais);
       renderizarGraficoPrioridades(dadosFiltradosAtuais);
 
+      // Paginação
       const totalRegistros = dadosFiltradosAtuais.length;
       const totalPaginas = Math.ceil(totalRegistros / ITENS_POR_PAGINA) || 1;
 
@@ -685,19 +731,19 @@
         }
 
         let statusBadgeClass = 'badge bg-info text-dark';
-        const statusAtual = (d.status_atendimento || '').trim();
+        const statusAtual = d.status_atendimento;
 
-        if (statusAtual.toLowerCase() === 'pendente') {
+        if (statusAtual === 'Pendente') {
           statusBadgeClass = 'badge badge-status-pendente';
-        } else if (statusAtual.toLowerCase() === 'em tratativa') {
+        } else if (statusAtual === 'Técnico em Tratativas (in loco)') {
           statusBadgeClass = 'badge bg-success text-white';
         } else if (statusAtual === 'Rede Externa') {
           statusBadgeClass = 'badge text-white';
         } else if (statusAtual === 'Aguard. Liberação Acesso') {
           statusBadgeClass = 'badge text-white';
-        } else if (statusAtual === 'Concluído') {
+        } else if (statusAtual === 'Encerrado') {
           statusBadgeClass = 'badge bg-dark text-white';
-        } else if (statusAtual === 'Análise de Mão de Obra' || statusAtual === 'Aguardando sobressalente') {
+        } else if (statusAtual === 'Fila de Atendimento') {
           statusBadgeClass = 'badge bg-secondary text-white';
         }
 
@@ -796,7 +842,7 @@
       dddsUnicos.forEach(ddd => {
         const itensDdd = dados.filter(d => d.ddd === ddd);
         volumeTotal.push(itensDdd.length);
-        volumePendente.push(itensDdd.filter(d => (d.status_atendimento || '').trim().toLowerCase() === 'pendente').length);
+        volumePendente.push(itensDdd.filter(d => d.status_atendimento === 'Pendente').length);
       });
 
       const ctx = document.getElementById('graficoDddSla').getContext('2d');
@@ -1009,9 +1055,20 @@
 
       document.getElementById('modal-previsao').value = item.previsao || '';
       
-      let statusSelecionado = item.status_atendimento || 'Pendente';
-      if (statusSelecionado === 'Aguardando sobressalente') statusSelecionado = 'Análise de Mão de Obra';
-      document.getElementById('modal-status-op').value = statusSelecionado;
+      const selectStatus = document.getElementById('modal-status-op');
+      const statusPadronizado = normalizarStatus(item.status_atendimento);
+      
+      let statusExiste = false;
+      for (let i = 0; i < selectStatus.options.length; i++) {
+        if (selectStatus.options[i].value === statusPadronizado) {
+          selectStatus.selectedIndex = i;
+          statusExiste = true;
+          break;
+        }
+      }
+      if (!statusExiste) {
+        selectStatus.add(new Option(statusPadronizado, statusPadronizado, true, true));
+      }
       
       document.getElementById('modal-texto-obs').value = item.observacao || '';
       modalInstance.show();
