@@ -9,9 +9,10 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   
-  <!-- Scripts para Leitura CSV e Exportação Excel (.xlsx) -->
+  <!-- Scripts: PapaParse (CSV), XLSX (Excel) e Chart.js (Gráficos) -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     body { background-color: #f4f6f9; font-size: 0.85rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
@@ -74,10 +75,15 @@
     }
     .sync-time {
       font-family: "Courier New", Courier, monospace;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       color: #e2e8f0;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
+    }
+    .sync-subtext {
+      font-size: 0.72rem;
+      color: #0dcaf0;
+      margin-top: 1px;
     }
     .btn-header {
       font-size: 0.82rem;
@@ -89,33 +95,12 @@
       gap: 6px;
       transition: all 0.2s ease;
     }
-    .btn-header-sync {
-      background-color: #00965e;
-      border: 1px solid #00965e;
-      color: #ffffff;
-    }
-    .btn-header-sync:hover {
-      background-color: #007a4d;
-      color: #ffffff;
-    }
-    .btn-header-report {
-      background-color: #172338;
-      border: 1px solid #283953;
-      color: #d1dbe7;
-    }
-    .btn-header-report:hover {
-      background-color: #202f49;
-      color: #ffffff;
-    }
-    .btn-header-excel {
-      background-color: #1b63ff;
-      border: 1px solid #1b63ff;
-      color: #ffffff;
-    }
-    .btn-header-excel:hover {
-      background-color: #0f4ee6;
-      color: #ffffff;
-    }
+    .btn-header-sync { background-color: #00965e; border: 1px solid #00965e; color: #ffffff; }
+    .btn-header-sync:hover { background-color: #007a4d; color: #ffffff; }
+    .btn-header-report { background-color: #172338; border: 1px solid #283953; color: #d1dbe7; }
+    .btn-header-report:hover { background-color: #202f49; color: #ffffff; }
+    .btn-header-excel { background-color: #1b63ff; border: 1px solid #1b63ff; color: #ffffff; }
+    .btn-header-excel:hover { background-color: #0f4ee6; color: #ffffff; }
 
     /* CARDS & TABELA */
     .card-kpi { border: none; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
@@ -123,12 +108,21 @@
     .badge-fora { background-color: #dc3545; color: #fff; font-weight: bold; }
     .badge-dentro { background-color: #198754; color: #fff; }
     .table td, .table th { vertical-align: middle; }
-    .obs-cell { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .obs-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* ESTILO PARA IMPRESSÃO (PDF) */
+    /* GRÁFICO CONTAINER */
+    .chart-container-card {
+      background: #ffffff;
+      border-radius: 10px;
+      border: none;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+
     @media print {
       body { background-color: #fff; font-size: 10pt; }
-      .header-painel, .btn, .modal, .card-kpi, .card-filtros { display: none !important; }
+      .header-painel, .btn, .modal, .card-kpi, .card-filtros, .chart-container-card { display: none !important; }
       .table { width: 100% !important; }
     }
   </style>
@@ -136,7 +130,7 @@
 <body class="p-3">
   <div class="container-fluid">
     
-    <!-- CABEÇALHO -->
+    <!-- CABEÇALHO PADRONIZADO -->
     <div class="header-painel d-flex flex-wrap justify-content-between align-items-center gap-3">
       <div class="d-flex align-items-center gap-3">
         <div class="header-icon-box shadow-sm">
@@ -155,6 +149,7 @@
         <div class="sync-info">
           <div class="sync-label">ÚLTIMA SINCRONIZAÇÃO</div>
           <div id="txt-ultima-sync" class="sync-time">--:--:--</div>
+          <div id="txt-base-atualizada" class="sync-subtext">Base atualizada: --</div>
         </div>
         
         <button class="btn btn-header btn-header-sync" onclick="carregarDados()">
@@ -173,41 +168,66 @@
 
     <!-- CARDS TOTALIZADORES -->
     <div class="row g-2 mb-3">
-      <div class="col-md-2">
-        <div class="card card-kpi p-3 bg-white border-start border-primary border-4">
+      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 12%;">
+        <div class="card card-kpi p-3 bg-white border-start border-primary border-4 h-100">
           <small class="text-muted fw-bold">TOTAL TAs</small>
           <h3 id="card-total" class="m-0 text-primary">0</h3>
         </div>
       </div>
-      <div class="col-md-2">
-        <div class="card card-kpi p-3 bg-white border-start border-warning border-4">
+      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 12%;">
+        <div class="card card-kpi p-3 bg-white border-start border-warning border-4 h-100">
           <small class="text-muted fw-bold">VENCENDO</small>
           <h3 id="card-vencendo" class="m-0 text-warning">0</h3>
         </div>
       </div>
-      <div class="col-md-2">
-        <div class="card card-kpi p-3 bg-white border-start border-danger border-4">
+      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 12%;">
+        <div class="card card-kpi p-3 bg-white border-start border-danger border-4 h-100">
           <small class="text-muted fw-bold">FORA DO PRAZO</small>
           <h3 id="card-fora" class="m-0 text-danger">0</h3>
         </div>
       </div>
-      <div class="col-md-2">
-        <div class="card card-kpi p-3 bg-white border-start border-info border-4">
+      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 12%;">
+        <div class="card card-kpi p-3 bg-white border-start border-info border-4 h-100">
           <small class="text-muted fw-bold">EM DESLOCAMENTO</small>
           <h3 id="card-deslocamento" class="m-0 text-info">0</h3>
         </div>
       </div>
-      <div class="col-md-2">
-        <div class="card card-kpi p-3 bg-white border-start border-success border-4">
+      <!-- NOVO CARD: REDE EXTERNA -->
+      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 13%;">
+        <div class="card card-kpi p-3 bg-white border-start border-4 h-100" style="border-left-color: #6f42c1 !important;">
+          <small class="text-muted fw-bold">REDE EXTERNA</small>
+          <h3 id="card-rede-externa" class="m-0" style="color: #6f42c1;">0</h3>
+        </div>
+      </div>
+      <!-- NOVO CARD: AGUARD. LIBERAÇÃO ACESSO -->
+      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 14%;">
+        <div class="card card-kpi p-3 bg-white border-start border-4 h-100" style="border-left-color: #fd7e14 !important;">
+          <small class="text-muted fw-bold">AGUARD. LIBERAÇÃO ACESSO</small>
+          <h3 id="card-liberacao-acesso" class="m-0" style="color: #fd7e14;">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 12%;">
+        <div class="card card-kpi p-3 bg-white border-start border-success border-4 h-100">
           <small class="text-muted fw-bold">GMG ACOPLADO</small>
           <h3 id="card-gmg" class="m-0 text-success">0</h3>
         </div>
       </div>
-      <div class="col-md-2">
-        <div class="card card-kpi p-3 bg-white border-start border-secondary border-4">
-          <small class="text-muted fw-bold">ANÁLISE DE MÃO DE OBRA</small>
+      <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 13%;">
+        <div class="card card-kpi p-3 bg-white border-start border-secondary border-4 h-100">
+          <small class="text-muted fw-bold">ANÁLISE MÃO DE OBRA</small>
           <h3 id="card-mao-de-obra" class="m-0 text-secondary">0</h3>
         </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO DO GRÁFICO: VOLUME POR DDD E LINHAS DE PRAZO -->
+    <div class="chart-container-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Distribuição de TAs por DDD (Volume Total vs SLA)</h6>
+        <small class="text-muted">Barras: Volume Total | Linhas: Dentro vs Fora do Prazo</small>
+      </div>
+      <div style="position: relative; height: 260px; width: 100%;">
+        <canvas id="graficoDddSla"></canvas>
       </div>
     </div>
 
@@ -296,6 +316,8 @@
               <option value="Pendente">Pendente</option>
               <option value="Em tratativa">Em tratativa</option>
               <option value="Em deslocamento">Em deslocamento</option>
+              <option value="Rede Externa">Rede Externa</option>
+              <option value="Aguard. Liberação Acesso">Aguard. Liberação Acesso</option>
               <option value="Em atendimento">Em atendimento</option>
               <option value="Com GMG acoplado">Com GMG acoplado</option>
               <option value="GMG em deslocamento">GMG em deslocamento</option>
@@ -325,6 +347,7 @@
     let dadosGlobais = [];
     let dadosFiltradosAtuais = [];
     let modalInstance = null;
+    let chartInstance = null;
 
     function limparTexto(txt) {
       if (!txt) return "";
@@ -342,11 +365,6 @@
       carregarDados();
     };
 
-    function formatarHoraAtual() {
-      const agora = new Date();
-      return agora.toTimeString().split(' ')[0];
-    }
-
     function carregarDados() {
       document.getElementById('txt-ultima-sync').innerText = "Carregando...";
       const urlSemCache = URL_CSV + "&_t=" + new Date().getTime();
@@ -356,6 +374,13 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
+          // Identifica se há data/hora de controle gravada nas colunas T ou U
+          let dataControlePlanilha = "";
+          if (results.data.length > 0) {
+            const primeiraLinha = results.data[0];
+            dataControlePlanilha = primeiraLinha["Última Atualização"] || primeiraLinha["Ultima Atualizacao"] || primeiraLinha["__parsed_extra"]?.[0] || "";
+          }
+
           dadosGlobais = results.data.map(r => ({
             ta: r["TA"] || "",
             ddd: r["DDD"] || "",
@@ -378,7 +403,13 @@
 
           popularFiltros(dadosGlobais);
           renderizar();
-          document.getElementById('txt-ultima-sync').innerText = formatarHoraAtual();
+
+          // Atualiza cabeçalho com horário do clique e data da base (coluna T/U)
+          const agora = new Date().toTimeString().split(' ')[0];
+          document.getElementById('txt-ultima-sync').innerText = agora;
+          document.getElementById('txt-base-atualizada').innerText = dataControlePlanilha 
+            ? `Base atualizada: ${dataControlePlanilha}` 
+            : `Base atualizada: ${dadosGlobais.length} TAs carregados`;
         },
         error: function(err) {
           document.getElementById('txt-ultima-sync').innerText = "Erro!";
@@ -435,9 +466,17 @@
       document.getElementById('card-fora').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length;
       document.getElementById('card-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Em deslocamento').length;
       document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
+      
+      // Novos cards
+      document.getElementById('card-rede-externa').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Rede Externa').length;
+      document.getElementById('card-liberacao-acesso').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Aguard. Liberação Acesso').length;
+
       document.getElementById('card-mao-de-obra').innerText = dadosFiltradosAtuais.filter(d => 
         d.status_atendimento === 'Análise de Mão de Obra' || d.status_atendimento === 'Aguardando sobressalente'
       ).length;
+
+      // Atualiza o Gráfico com os dados filtrados
+      renderizarGrafico(dadosFiltradosAtuais);
 
       // Monta as linhas da tabela
       const tbody = document.getElementById('tabela-corpo');
@@ -457,11 +496,20 @@
           statusBadgeClass = 'badge bg-success text-white';
         } else if (statusAtual === 'Pendente') {
           statusBadgeClass = 'badge bg-info text-dark';
+        } else if (statusAtual === 'Rede Externa') {
+          statusBadgeClass = 'badge text-white';
+          statusBadgeStyle = 'background-color: #6f42c1;';
+        } else if (statusAtual === 'Aguard. Liberação Acesso') {
+          statusBadgeClass = 'badge text-white';
+          statusBadgeStyle = 'background-color: #fd7e14;';
         } else if (statusAtual === 'Concluído') {
           statusBadgeClass = 'badge bg-dark text-white';
         } else if (statusAtual === 'Análise de Mão de Obra' || statusAtual === 'Aguardando sobressalente') {
           statusBadgeClass = 'badge bg-secondary text-white';
         }
+
+        let inlineStyle = (statusAtual === 'Rede Externa') ? 'style="background-color: #6f42c1;"' : 
+                          (statusAtual === 'Aguard. Liberação Acesso') ? 'style="background-color: #fd7e14;"' : '';
 
         tbody.innerHTML += `
           <tr>
@@ -481,11 +529,97 @@
             <td><code>${d.tempo_gestor}</code></td>
             <td><span class="${slaBadgeClass}">${d.status_sla}</span></td>
             <td><span class="badge bg-light text-dark border">${d.tipo_rede || '-'}</span></td>
-            <td><span class="${statusBadgeClass}">${d.status_atendimento}</span></td>
+            <td><span class="${statusBadgeClass}" ${inlineStyle}>${d.status_atendimento}</span></td>
             <td><small>${d.previsao || '-'}</small></td>
             <td class="obs-cell" title="${d.observacao}">${d.observacao ? d.observacao : '<span class="text-muted">-</span>'}</td>
           </tr>
         `;
+      });
+    }
+
+    // FUNÇÃO QUE MONTA O GRÁFICO DE COLUNAS + LINHAS POR DDD
+    function renderizarGrafico(dados) {
+      const dddsUnicos = [...new Set(dados.map(d => d.ddd))].filter(Boolean).sort();
+      
+      const volumeTotal = [];
+      const foraPrazo = [];
+      const dentroPrazo = [];
+
+      dddsUnicos.forEach(ddd => {
+        const itensDdd = dados.filter(d => d.ddd === ddd);
+        volumeTotal.push(itensDdd.length);
+        foraPrazo.push(itensDdd.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length);
+        dentroPrazo.push(itensDdd.filter(d => !(d.status_sla || '').toUpperCase().includes('FORA')).length);
+      });
+
+      const ctx = document.getElementById('graficoDddSla').getContext('2d');
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: dddsUnicos.map(d => `DDD ${d}`),
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Volume Total (TAs)',
+              data: volumeTotal,
+              backgroundColor: 'rgba(27, 99, 255, 0.75)',
+              borderColor: '#1b63ff',
+              borderWidth: 1,
+              borderRadius: 6,
+              order: 3
+            },
+            {
+              type: 'line',
+              label: 'Dentro do Prazo / Vencendo',
+              data: dentroPrazo,
+              borderColor: '#198754',
+              backgroundColor: '#198754',
+              borderWidth: 2,
+              tension: 0.25,
+              fill: false,
+              pointRadius: 4,
+              order: 1
+            },
+            {
+              type: 'line',
+              label: 'Fora do Prazo',
+              data: foraPrazo,
+              borderColor: '#dc3545',
+              backgroundColor: '#dc3545',
+              borderWidth: 2,
+              tension: 0.25,
+              fill: false,
+              pointRadius: 4,
+              order: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { boxWidth: 12, font: { size: 11 } }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            }
+          },
+          scales: {
+            x: { grid: { display: false } },
+            y: { 
+              beginAtZero: true,
+              ticks: { precision: 0 },
+              grid: { color: 'rgba(0, 0, 0, 0.05)' }
+            }
+          }
+        }
       });
     }
 
