@@ -108,9 +108,9 @@
     .badge-fora { background-color: #dc3545; color: #fff; font-weight: bold; }
     .badge-dentro { background-color: #198754; color: #fff; }
     .table td, .table th { vertical-align: middle; }
-    .obs-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .obs-cell { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* GRÁFICO CONTAINER */
+    /* CONTAINER DO GRÁFICO */
     .chart-container-card {
       background: #ffffff;
       border-radius: 10px;
@@ -192,14 +192,14 @@
           <h3 id="card-deslocamento" class="m-0 text-info">0</h3>
         </div>
       </div>
-      <!-- NOVO CARD: REDE EXTERNA -->
+      <!-- CARD: REDE EXTERNA -->
       <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 13%;">
         <div class="card card-kpi p-3 bg-white border-start border-4 h-100" style="border-left-color: #6f42c1 !important;">
           <small class="text-muted fw-bold">REDE EXTERNA</small>
           <h3 id="card-rede-externa" class="m-0" style="color: #6f42c1;">0</h3>
         </div>
       </div>
-      <!-- NOVO CARD: AGUARD. LIBERAÇÃO ACESSO -->
+      <!-- CARD: AGUARD. LIBERAÇÃO ACESSO -->
       <div class="col-md-3 col-lg-1-5 col-sm-6" style="flex: 1 0 14%;">
         <div class="card card-kpi p-3 bg-white border-start border-4 h-100" style="border-left-color: #fd7e14 !important;">
           <small class="text-muted fw-bold">AGUARD. LIBERAÇÃO ACESSO</small>
@@ -246,11 +246,15 @@
           <label class="form-label small fw-bold">Status SLA</label>
           <select id="filtro-sla" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
+          <label class="form-label small fw-bold">Tipo de Rede</label>
+          <select id="filtro-rede" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todas</option></select>
+        </div>
+        <div class="col-md-2">
           <label class="form-label small fw-bold">Status Atendimento</label>
           <select id="filtro-status-op" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
           <label class="form-label small fw-bold">Buscar (Site / Alarme / TA)</label>
           <input type="text" id="filtro-busca" class="form-control form-control-sm" placeholder="Digite para buscar..." onkeyup="aplicarFiltros()">
         </div>
@@ -302,6 +306,9 @@
                 <option value="Móvel">Móvel</option>
                 <option value="Fixa">Fixa</option>
                 <option value="Ambos">Ambos</option>
+                <option value="Backhaul">Backhaul</option>
+                <option value="Acesso">Acesso</option>
+                <option value="FTTH">FTTH</option>
               </select>
             </div>
             <div class="col-md-6">
@@ -374,37 +381,40 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          // Identifica se há data/hora de controle gravada nas colunas T ou U
           let dataControlePlanilha = "";
           if (results.data.length > 0) {
             const primeiraLinha = results.data[0];
             dataControlePlanilha = primeiraLinha["Última Atualização"] || primeiraLinha["Ultima Atualizacao"] || primeiraLinha["__parsed_extra"]?.[0] || "";
           }
 
-          dadosGlobais = results.data.map(r => ({
-            ta: r["TA"] || "",
-            ddd: r["DDD"] || "",
-            coordenador: limparTexto(r["Coordenador"] || ""),
-            site: r["SITE"] || "",
-            localidade: limparTexto(r["Localidade"] || ""),
-            site_nome: limparTexto(r["SITE Nome"] || ""),
-            qtd_ta: r["QTD TA"] || "",
-            alarme: limparTexto(r["Alarme"] || ""),
-            tempo_total: r["Tempo Total"] || "",
-            tempo_gestor: r["Tempo Gestor Tel"] || "",
-            prioridade: r["Prioridade"] || "",
-            grupo_responsavel: r["Grupo Responsavel"] || "",
-            status_sla: r["STATUS SLA"] || "",
-            tipo_rede: r["TIpo Rede"] || "",
-            status_atendimento: r["Status Atendimento"] || "Pendente",
-            previsao: r["Previsão"] || "",
-            observacao: r["Observação"] || ""
-          })).filter(d => d.ta && d.ta.trim() !== "");
+          dadosGlobais = results.data.map(r => {
+            // Mapeia todas as possíveis variações do nome da coluna "Tipo Rede"
+            const tipoRedeExtraido = r["TIpo Rede"] || r["Tipo Rede"] || r["Tipo de Rede"] || r["Rede"] || "";
+
+            return {
+              ta: r["TA"] || "",
+              ddd: r["DDD"] || "",
+              coordenador: limparTexto(r["Coordenador"] || ""),
+              site: r["SITE"] || "",
+              localidade: limparTexto(r["Localidade"] || ""),
+              site_nome: limparTexto(r["SITE Nome"] || ""),
+              qtd_ta: r["QTD TA"] || "",
+              alarme: limparTexto(r["Alarme"] || ""),
+              tempo_total: r["Tempo Total"] || "",
+              tempo_gestor: r["Tempo Gestor Tel"] || "",
+              prioridade: r["Prioridade"] || "",
+              grupo_responsavel: r["Grupo Responsavel"] || "",
+              status_sla: r["STATUS SLA"] || "",
+              tipo_rede: tipoRedeExtraido.trim(),
+              status_atendimento: (r["Status Atendimento"] || "Pendente").trim(),
+              previsao: r["Previsão"] || "",
+              observacao: r["Observação"] || ""
+            };
+          }).filter(d => d.ta && d.ta.trim() !== "");
 
           popularFiltros(dadosGlobais);
           renderizar();
 
-          // Atualiza cabeçalho com horário do clique e data da base (coluna T/U)
           const agora = new Date().toTimeString().split(' ')[0];
           document.getElementById('txt-ultima-sync').innerText = agora;
           document.getElementById('txt-base-atualizada').innerText = dataControlePlanilha 
@@ -422,6 +432,7 @@
       preencherSelect('filtro-ddd', [...new Set(dados.map(d => d.ddd))].sort());
       preencherSelect('filtro-prioridade', [...new Set(dados.map(d => d.prioridade))].sort());
       preencherSelect('filtro-sla', [...new Set(dados.map(d => d.status_sla))].sort());
+      preencherSelect('filtro-rede', [...new Set(dados.map(d => d.tipo_rede))].sort());
       preencherSelect('filtro-status-op', [...new Set(dados.map(d => d.status_atendimento))].sort());
     }
 
@@ -443,6 +454,7 @@
       const fDdd = document.getElementById('filtro-ddd').value;
       const fPrio = document.getElementById('filtro-prioridade').value;
       const fSla = document.getElementById('filtro-sla').value;
+      const fRede = document.getElementById('filtro-rede').value;
       const fStatusOp = document.getElementById('filtro-status-op').value;
       const fBusca = (document.getElementById('filtro-busca').value || '').toLowerCase();
 
@@ -450,6 +462,7 @@
         const atendeDdd = !fDdd || String(d.ddd) === String(fDdd);
         const atendePrio = !fPrio || String(d.prioridade) === String(fPrio);
         const atendeSla = !fSla || String(d.status_sla) === String(fSla);
+        const atendeRede = !fRede || String(d.tipo_rede) === String(fRede);
         const atendeStatusOp = !fStatusOp || String(d.status_atendimento) === String(fStatusOp);
         const atendeBusca = !fBusca || 
           (d.site_nome || '').toLowerCase().includes(fBusca) ||
@@ -457,28 +470,25 @@
           (d.alarme || '').toLowerCase().includes(fBusca) ||
           (d.ta || '').toLowerCase().includes(fBusca);
 
-        return atendeDdd && atendePrio && atendeSla && atendeStatusOp && atendeBusca;
+        return atendeDdd && atendePrio && atendeSla && atendeRede && atendeStatusOp && atendeBusca;
       });
 
-      // Atualiza os Cards
+      // Atualiza Cards
       document.getElementById('card-total').innerText = dadosFiltradosAtuais.length;
       document.getElementById('card-vencendo').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('VENCENDO')).length;
       document.getElementById('card-fora').innerText = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length;
       document.getElementById('card-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Em deslocamento').length;
       document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
-      
-      // Novos cards
       document.getElementById('card-rede-externa').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Rede Externa').length;
       document.getElementById('card-liberacao-acesso').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Aguard. Liberação Acesso').length;
-
       document.getElementById('card-mao-de-obra').innerText = dadosFiltradosAtuais.filter(d => 
         d.status_atendimento === 'Análise de Mão de Obra' || d.status_atendimento === 'Aguardando sobressalente'
       ).length;
 
-      // Atualiza o Gráfico com os dados filtrados
+      // Gráfico
       renderizarGrafico(dadosFiltradosAtuais);
 
-      // Monta as linhas da tabela
+      // Tabela
       const tbody = document.getElementById('tabela-corpo');
       tbody.innerHTML = '';
 
@@ -498,10 +508,8 @@
           statusBadgeClass = 'badge bg-info text-dark';
         } else if (statusAtual === 'Rede Externa') {
           statusBadgeClass = 'badge text-white';
-          statusBadgeStyle = 'background-color: #6f42c1;';
         } else if (statusAtual === 'Aguard. Liberação Acesso') {
           statusBadgeClass = 'badge text-white';
-          statusBadgeStyle = 'background-color: #fd7e14;';
         } else if (statusAtual === 'Concluído') {
           statusBadgeClass = 'badge bg-dark text-white';
         } else if (statusAtual === 'Análise de Mão de Obra' || statusAtual === 'Aguardando sobressalente') {
@@ -537,10 +545,8 @@
       });
     }
 
-    // FUNÇÃO QUE MONTA O GRÁFICO DE COLUNAS + LINHAS POR DDD
     function renderizarGrafico(dados) {
       const dddsUnicos = [...new Set(dados.map(d => d.ddd))].filter(Boolean).sort();
-      
       const volumeTotal = [];
       const foraPrazo = [];
       const dentroPrazo = [];
@@ -602,22 +608,11 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: {
-              position: 'top',
-              labels: { boxWidth: 12, font: { size: 11 } }
-            },
-            tooltip: {
-              mode: 'index',
-              intersect: false
-            }
+            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
           },
           scales: {
             x: { grid: { display: false } },
-            y: { 
-              beginAtZero: true,
-              ticks: { precision: 0 },
-              grid: { color: 'rgba(0, 0, 0, 0.05)' }
-            }
+            y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(0, 0, 0, 0.05)' } }
           }
         }
       });
@@ -657,13 +652,36 @@
       XLSX.writeFile(wb, `Base_TAs_${dataHora}.xlsx`);
     }
 
+    // ABERTURA DA MODAL COM TIPO DE REDE PRÉ-CARREGADO E FLEXÍVEL
     function abrirModal(idTa) {
       const item = dadosGlobais.find(d => String(d.ta) === String(idTa));
       if (!item) return;
 
       document.getElementById('modal-ta-id').innerText = item.ta;
       document.getElementById('modal-detalhe-site').innerText = `${item.site} | ${item.site_nome} (${item.localidade} - DDD ${item.ddd})`;
-      document.getElementById('modal-tipo-rede').value = item.tipo_rede || '';
+      
+      // Carrega o tipo de rede atual e garante que ele esteja nas opções do select
+      const selectRede = document.getElementById('modal-tipo-rede');
+      const redeAtual = (item.tipo_rede || '').trim();
+      
+      if (redeAtual) {
+        let opcaoExiste = false;
+        for (let i = 0; i < selectRede.options.length; i++) {
+          if (selectRede.options[i].value.toLowerCase() === redeAtual.toLowerCase()) {
+            selectRede.selectedIndex = i;
+            opcaoExiste = true;
+            break;
+          }
+        }
+        // Se for um tipo de rede diferente dos pré-definidos, insere na hora e seleciona
+        if (!opcaoExiste) {
+          const novaOpcao = new Option(redeAtual, redeAtual, true, true);
+          selectRede.add(novaOpcao);
+        }
+      } else {
+        selectRede.value = '';
+      }
+
       document.getElementById('modal-previsao').value = item.previsao || '';
       
       let statusSelecionado = item.status_atendimento || 'Pendente';
