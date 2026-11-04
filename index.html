@@ -136,9 +136,21 @@
       height: 100%;
     }
 
+    /* PAGINAÇÃO */
+    .pagination .page-link {
+      color: #0b1325;
+      font-size: 0.8rem;
+      padding: 5px 11px;
+    }
+    .pagination .page-item.active .page-link {
+      background-color: #0b1325;
+      border-color: #0b1325;
+      color: #ffffff;
+    }
+
     @media print {
       body { background-color: #fff; font-size: 10pt; }
-      .header-painel, .btn, .modal, .card-kpi, .card-filtros, .chart-container-card, .chart-row { display: none !important; }
+      .header-painel, .btn, .modal, .card-kpi, .card-filtros, .chart-container-card, .chart-row, .card-footer-paginacao { display: none !important; }
       .table { width: 100% !important; }
     }
   </style>
@@ -233,7 +245,7 @@
       </div>
     </div>
 
-    <!-- FILTROS (ACIMA DOS GRÁFICOS CONFORME SOLICITADO) -->
+    <!-- FILTROS (ACIMA DOS GRÁFICOS) -->
     <div class="card card-filtros p-3 mb-3 bg-white">
       <div class="row g-2">
         <div class="col-md-2">
@@ -265,7 +277,6 @@
 
     <!-- SEÇÃO DE GRÁFICOS NA MESMA LINHA -->
     <div class="row g-3 mb-3 chart-row">
-      <!-- Gráfico 1: Volume por DDD + Linha Pendente -->
       <div class="col-lg-7">
         <div class="chart-container-card">
           <div class="d-flex justify-content-between align-items-center mb-2">
@@ -278,7 +289,6 @@
         </div>
       </div>
 
-      <!-- Gráfico 2: Barras Horizontais com Prioridade (P1 a P4) -->
       <div class="col-lg-5">
         <div class="chart-container-card">
           <div class="d-flex justify-content-between align-items-center mb-2">
@@ -292,8 +302,8 @@
       </div>
     </div>
 
-    <!-- GRID -->
-    <div class="card border-0 shadow-sm bg-white">
+    <!-- GRID COM PAGINAÇÃO DE 70 ITENS -->
+    <div class="card border-0 shadow-sm bg-white mb-4">
       <div class="table-responsive">
         <table class="table table-hover table-striped align-middle mb-0">
           <thead class="table-dark small">
@@ -315,7 +325,18 @@
           <tbody id="tabela-corpo"></tbody>
         </table>
       </div>
+
+      <!-- BARRA DE PAGINAÇÃO INFERIOR -->
+      <div class="card-footer card-footer-paginacao bg-light d-flex flex-wrap justify-content-between align-items-center p-3 border-top">
+        <div id="txt-info-paginacao" class="small text-muted mb-2 mb-md-0">
+          Mostrando 0 até 0 de 0 TAs
+        </div>
+        <nav aria-label="Navegação da Tabela">
+          <ul id="ul-paginacao" class="pagination pagination-sm m-0"></ul>
+        </nav>
+      </div>
     </div>
+
   </div>
 
   <!-- MODAL DE ATUALIZAÇÃO -->
@@ -382,6 +403,10 @@
     const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqo-oRoCVNXTJE8RxAnfQcNWPty232zFuVArT6l-1w4CnsSLO7YETVeBsKPWh0SkwX8wVg-VT7Vb80/pub?gid=2115875129&single=true&output=csv";
     const URL_APPS_SCRIPT_WEBAPP = "COLE_AQUI_A_URL_DO_WEBAPP_APPS_SCRIPT";
 
+    // CONTROLE DE PAGINAÇÃO
+    const ITENS_POR_PAGINA = 70;
+    let paginaAtual = 1;
+
     let dadosGlobais = [];
     let dadosFiltradosAtuais = [];
     let modalInstance = null;
@@ -444,6 +469,7 @@
           }).filter(d => d.ta && d.ta.trim() !== "");
 
           popularFiltros(dadosGlobais);
+          paginaAtual = 1;
           renderizar();
 
           const agora = new Date().toTimeString().split(' ')[0];
@@ -481,6 +507,7 @@
     }
 
     function aplicarFiltros() {
+      paginaAtual = 1; // Sempre volta para a primeira página ao filtrar
       renderizar();
     }
 
@@ -519,15 +546,36 @@
         d.status_atendimento === 'Análise de Mão de Obra' || d.status_atendimento === 'Aguardando sobressalente'
       ).length;
 
-      // Renderiza ambos os gráficos
+      // Renderiza gráficos
       renderizarGraficoDdd(dadosFiltradosAtuais);
       renderizarGraficoPrioridades(dadosFiltradosAtuais);
 
-      // Tabela
+      // ==========================================
+      // PAGINAÇÃO DE 70 ITENS NO GRID
+      // ==========================================
+      const totalRegistros = dadosFiltradosAtuais.length;
+      const totalPaginas = Math.ceil(totalRegistros / ITENS_POR_PAGINA) || 1;
+
+      if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+      if (paginaAtual < 1) paginaAtual = 1;
+
+      const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+      const fim = Math.min(inicio + ITENS_POR_PAGINA, totalRegistros);
+      const dadosPagina = dadosFiltradosAtuais.slice(inicio, fim);
+
+      // Atualiza texto informativo da paginação
+      const infoPaginacao = document.getElementById('txt-info-paginacao');
+      if (totalRegistros > 0) {
+        infoPaginacao.innerText = `Mostrando ${inicio + 1} até ${fim} de ${totalRegistros} TAs (Página ${paginaAtual} de ${totalPaginas})`;
+      } else {
+        infoPaginacao.innerText = `Nenhum TA encontrado com os filtros selecionados.`;
+      }
+
+      // Monta as linhas da tabela
       const tbody = document.getElementById('tabela-corpo');
       tbody.innerHTML = '';
 
-      dadosFiltradosAtuais.forEach(d => {
+      dadosPagina.forEach(d => {
         let slaBadgeClass = 'badge bg-secondary';
         const sla = (d.status_sla || '').toUpperCase();
         if (sla.includes('VENCENDO')) slaBadgeClass = 'badge badge-vencendo';
@@ -578,6 +626,68 @@
           </tr>
         `;
       });
+
+      // Renderiza botões da paginação
+      renderizarBotoesPaginacao(totalPaginas);
+    }
+
+    // BOTÕES NUMERADOS DE NAVEGAÇÃO
+    function renderizarBotoesPaginacao(totalPaginas) {
+      const ul = document.getElementById('ul-paginacao');
+      ul.innerHTML = '';
+
+      if (totalPaginas <= 1) return;
+
+      // Botão Anterior
+      ul.innerHTML += `
+        <li class="page-item ${paginaAtual === 1 ? 'disabled' : ''}">
+          <a class="page-link" href="javascript:void(0)" onclick="mudarPagina(${paginaAtual - 1})">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        </li>
+      `;
+
+      // Janela de páginas vizinhas
+      let paginaInicial = Math.max(1, paginaAtual - 2);
+      let paginaFinal = Math.min(totalPaginas, paginaAtual + 2);
+
+      if (paginaInicial > 1) {
+        ul.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="mudarPagina(1)">1</a></li>`;
+        if (paginaInicial > 2) {
+          ul.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+      }
+
+      for (let p = paginaInicial; p <= paginaFinal; p++) {
+        ul.innerHTML += `
+          <li class="page-item ${p === paginaAtual ? 'active' : ''}">
+            <a class="page-link" href="javascript:void(0)" onclick="mudarPagina(${p})">${p}</a>
+          </li>
+        `;
+      }
+
+      if (paginaFinal < totalPaginas) {
+        if (paginaFinal < totalPaginas - 1) {
+          ul.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+        ul.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="mudarPagina(${totalPaginas})">${totalPaginas}</a></li>`;
+      }
+
+      // Botão Próximo
+      ul.innerHTML += `
+        <li class="page-item ${paginaAtual === totalPaginas ? 'disabled' : ''}">
+          <a class="page-link" href="javascript:void(0)" onclick="mudarPagina(${paginaAtual + 1})">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </li>
+      `;
+    }
+
+    function mudarPagina(novaPagina) {
+      paginaAtual = novaPagina;
+      renderizar();
+      // Rola suavemente até o início do grid
+      document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // GRÁFICO 1: DDD vs PENDENTE
@@ -641,12 +751,11 @@
       });
     }
 
-    // GRÁFICO 2: BARRAS HORIZONTAIS DE PRIORIDADE COM VOLUME NA EXTREMIDADE E % NA BASE INTERNA
+    // GRÁFICO 2: BARRAS HORIZONTAIS DE PRIORIDADE COM VOLUME E %
     function renderizarGraficoPrioridades(dados) {
       const labelsPrio = ['P1', 'P2', 'P3', 'P4'];
       const totalGeral = dados.length;
 
-      // Mapeia valores numéricos ou texto (ex: "1" ou "P1")
       const contagem = [
         dados.filter(d => d.prioridade === '1' || d.prioridade.toUpperCase() === 'P1').length,
         dados.filter(d => d.prioridade === '2' || d.prioridade.toUpperCase() === 'P2').length,
@@ -654,7 +763,6 @@
         dados.filter(d => d.prioridade === '4' || d.prioridade.toUpperCase() === 'P4').length
       ];
 
-      // Plugin personalizado para desenhar o % na base e o volume na ponta externa
       const customLabelsPlugin = {
         id: 'customBarLabels',
         afterDatasetsDraw(chart) {
@@ -668,7 +776,7 @@
               ctx.save();
               ctx.font = 'bold 11px sans-serif';
 
-              // 1. Rótulo de % na base interna da barra (à esquerda)
+              // Rótulo % na base interna
               ctx.fillStyle = '#ffffff';
               ctx.textAlign = 'left';
               ctx.textBaseline = 'middle';
@@ -676,7 +784,7 @@
                 ctx.fillText(pct, bar.base + 8, bar.y);
               }
 
-              // 2. Rótulo de Volume na extremidade externa da barra (à direita)
+              // Rótulo Volume na ponta externa
               ctx.fillStyle = '#212529';
               ctx.textAlign = 'left';
               ctx.fillText(`${val} TAs`, bar.x + 6, bar.y);
@@ -726,7 +834,7 @@
             }
           },
           layout: {
-            padding: { right: 55 } // Espaço para não cortar o texto do volume na direita
+            padding: { right: 55 }
           },
           scales: {
             x: {
