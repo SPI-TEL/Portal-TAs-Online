@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Controle de Ordens de Serviço - Vivo / TEL</title>
   
+  <!-- META TAGS ANTI-CACHE (Evita que o telemóvel fique travado na versão antiga) -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
   <!-- CSS Bootstrap & Ícones -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -23,7 +28,7 @@
       color: #ffffff;
       border-radius: 14px;
       padding: 16px 24px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
     }
     .header-icon-box {
@@ -114,26 +119,48 @@
       margin-top: 3px !important;
     }
 
-    /* FILTROS E TABELA */
+    /* FILTROS COMPACTOS E ESTREITOS */
     .card-filtros {
       border: none;
-      border-radius: 10px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      padding: 7px 14px !important;
+      margin-bottom: 14px;
     }
+    .card-filtros .filtro-label {
+      font-size: 0.70rem !important;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 2px !important;
+      letter-spacing: 0.2px;
+      display: block;
+    }
+    .card-filtros .form-control-sm,
+    .card-filtros .form-select-sm {
+      font-size: 0.80rem !important;
+      height: 30px !important;
+      padding-top: 2px !important;
+      padding-bottom: 2px !important;
+      padding-left: 8px !important;
+      border-color: #cbd5e1;
+      border-radius: 6px;
+    }
+
+    /* BADGES SLA E STATUS */
     .badge-vencendo { background-color: #ffc107; color: #000; font-weight: bold; }
     .badge-fora { background-color: #dc3545; color: #fff; font-weight: bold; }
     
-    /* NO PRAZO: SEM FUNDO CINZA, APENAS LETRA VERDE ESCURO */
+    /* NO PRAZO: SEM FUNDO CINZENTO, APENAS LETRA VERDE ESCURO */
     .badge-no-prazo {
       background: transparent !important;
-      color: #0f5132 !important; /* Verde escuro */
+      color: #0f5132 !important;
       font-weight: 800;
       font-size: 0.85rem;
       border: none !important;
       padding: 0;
     }
 
-    /* PENDENTE: EM CINZA */
+    /* PENDENTE: EM CINZENTO */
     .badge-status-pendente {
       background-color: #6c757d !important;
       color: #ffffff !important;
@@ -262,31 +289,31 @@
       </div>
     </div>
 
-    <!-- FILTROS (ACIMA DOS GRÁFICOS) -->
-    <div class="card card-filtros p-3 mb-3 bg-white">
-      <div class="row g-2">
+    <!-- FILTROS COMPACTOS (ALTURA REDUZIDA E LABELS APROXIMADOS) -->
+    <div class="card card-filtros bg-white">
+      <div class="row g-2 align-items-end">
         <div class="col-md-2">
-          <label class="form-label small fw-bold">DDD</label>
+          <label class="filtro-label">DDD</label>
           <select id="filtro-ddd" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
         </div>
         <div class="col-md-2">
-          <label class="form-label small fw-bold">Prioridade</label>
+          <label class="filtro-label">Prioridade</label>
           <select id="filtro-prioridade" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todas</option></select>
         </div>
         <div class="col-md-2">
-          <label class="form-label small fw-bold">Status SLA</label>
+          <label class="filtro-label">Status SLA</label>
           <select id="filtro-sla" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
         </div>
         <div class="col-md-2">
-          <label class="form-label small fw-bold">Tipo de Rede</label>
+          <label class="filtro-label">Tipo de Rede</label>
           <select id="filtro-rede" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todas</option></select>
         </div>
         <div class="col-md-2">
-          <label class="form-label small fw-bold">Status Atendimento</label>
+          <label class="filtro-label">Status Atendimento</label>
           <select id="filtro-status-op" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
         </div>
         <div class="col-md-2">
-          <label class="form-label small fw-bold">Buscar (Site / Alarme / TA)</label>
+          <label class="filtro-label">Buscar (Site / Alarme / TA)</label>
           <input type="text" id="filtro-busca" class="form-control form-control-sm" placeholder="Digite para buscar..." onkeyup="aplicarFiltros()">
         </div>
       </div>
@@ -440,7 +467,7 @@
         .replace(/gerÃƒÂ¢ncia|gerÃ¢ncia/g, "gerência");
     }
 
-    // Avalia o tempo gestor: converte em segundos para comparar se é menor que 2 horas (7200 segundos)
+    // < 2h: PRETO | >= 2h: VERMELHO
     function obterEstiloTempoGestor(tempoStr) {
       if (!tempoStr) return 'color: #111827; font-weight: 600;';
       const partes = String(tempoStr).trim().split(':');
@@ -450,11 +477,10 @@
         const segundos = partes.length > 2 ? (parseInt(partes[2], 10) || 0) : 0;
         const totalSegundos = (horas * 3600) + (minutos * 60) + segundos;
 
-        // < 2 horas: PRETO; >= 2 horas: VERMELHO
         if (totalSegundos < 7200) {
-          return 'color: #111827; font-weight: 600;'; // Preto
+          return 'color: #111827; font-weight: 600;';
         } else {
-          return 'color: #dc3545; font-weight: 600;'; // Vermelho
+          return 'color: #dc3545; font-weight: 600;';
         }
       }
       return 'color: #111827; font-weight: 600;';
@@ -484,7 +510,7 @@
             const siteLimpo = (r["SITE"] || "").trim();
             let tipoRedePlanilha = (r["TIpo Rede"] || r["Tipo Rede"] || r["Tipo de Rede"] || r["Rede"] || "").trim();
 
-            // REGRA: Se não estiver preenchido na planilha, define pelo tamanho do Site
+            // REGRA: 2 caracteres = FIXA | 3 caracteres = Móvel
             if (!tipoRedePlanilha) {
               if (siteLimpo.length === 2) {
                 tipoRedePlanilha = "FIXA";
@@ -577,7 +603,7 @@
           (d.alarme || '').toLowerCase().includes(fBusca) ||
           (d.ta || '').toLowerCase().includes(fBusca);
 
-        return atendeDdd && atendePrio && atendeSla && atendeStatusOp && atendeBusca;
+        return atendeDdd && atendePrio && atendeSla && atendeRede && atendeStatusOp && atendeBusca;
       });
 
       // Cards
@@ -595,7 +621,7 @@
       renderizarGraficoDdd(dadosFiltradosAtuais);
       renderizarGraficoPrioridades(dadosFiltradosAtuais);
 
-      // Paginação de 70 TAs
+      // Paginação
       const totalRegistros = dadosFiltradosAtuais.length;
       const totalPaginas = Math.ceil(totalRegistros / ITENS_POR_PAGINA) || 1;
 
@@ -617,7 +643,7 @@
       tbody.innerHTML = '';
 
       dadosPagina.forEach(d => {
-        // SLA: "NO PRAZO" FICA SEM FUNDO CINZA E COM LETRA VERDE ESCURO
+        // SLA: "NO PRAZO" SEM FUNDO E COM LETRA VERDE ESCURO
         let slaBadgeClass = 'badge bg-secondary';
         const sla = (d.status_sla || '').toUpperCase();
         if (sla.includes('VENCENDO')) {
@@ -628,7 +654,7 @@
           slaBadgeClass = 'badge-no-prazo';
         }
 
-        // STATUS: PENDENTE FICA EM CINZA
+        // STATUS: PENDENTE EM CINZENTO
         let statusBadgeClass = 'badge bg-info text-dark';
         const statusAtual = (d.status_atendimento || '').trim();
 
@@ -649,7 +675,6 @@
         let inlineStyle = (statusAtual === 'Rede Externa') ? 'style="background-color: #6f42c1;"' : 
                           (statusAtual === 'Aguard. Liberação Acesso') ? 'style="background-color: #fd7e14;"' : '';
 
-        // TEMPO GESTOR: < 2h PRETO, >= 2h VERMELHO
         const estiloTempo = obterEstiloTempoGestor(d.tempo_gestor);
 
         tbody.innerHTML += `
@@ -850,10 +875,10 @@
             axis: 'y',
             data: contagem,
             backgroundColor: [
-              '#dc3545', // P1: Vermelho
-              '#fd7e14', // P2: Laranja
-              '#ffc107', // P3: Amarelo
-              '#0dcaf0'  // P4: Ciano
+              '#dc3545',
+              '#fd7e14',
+              '#ffc107',
+              '#0dcaf0'
             ],
             borderRadius: 6,
             borderSkipped: false
