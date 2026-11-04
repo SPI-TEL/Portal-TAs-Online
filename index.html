@@ -13,7 +13,7 @@
   <!-- SCRIPT DE AUTO-ATUALIZAÇÃO FORÇADA DE CACHE -->
   <script>
     (function() {
-      const VERSAO_ATUAL = "1.5.0";
+      const VERSAO_ATUAL = "1.6.0";
       const versaoArmazenada = localStorage.getItem("app_versao_portal_tas");
 
       if (versaoArmazenada !== VERSAO_ATUAL) {
@@ -36,72 +36,72 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    body { background-color: #f4f6f9; font-size: 0.85rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    body { background-color: #f4f6f9; font-size: 0.81rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
     
     .header-painel {
       background-color: #0b1325;
       color: #ffffff;
-      border-radius: 14px;
-      padding: 16px 24px;
-      margin-bottom: 14px;
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 12px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
     }
     .header-icon-box {
       background-color: rgba(25, 135, 84, 0.15);
       border: 1px solid rgba(25, 135, 84, 0.4);
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.55rem;
+      font-size: 1.45rem;
       color: #20c997;
     }
     .header-title {
-      font-size: 1.35rem;
+      font-size: 1.25rem;
       font-weight: 800;
       letter-spacing: -0.3px;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
     .header-subtitle {
       color: #8da2be;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       margin: 0;
     }
     .sync-info {
       text-align: right;
-      padding-right: 18px;
+      padding-right: 16px;
       border-right: 1px solid #1f2f47;
     }
     .sync-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 700;
       color: #7b8fa7;
-      letter-spacing: 0.6px;
-      margin-bottom: 2px;
+      letter-spacing: 0.5px;
+      margin-bottom: 1px;
       text-transform: uppercase;
     }
     .sync-time {
       font-family: "Courier New", Courier, monospace;
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 700;
       color: #e2e8f0;
       letter-spacing: 0.5px;
     }
     .sync-subtext {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       color: #20c997;
       margin-top: 1px;
     }
     .btn-header {
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      padding: 8px 16px;
-      border-radius: 8px;
+      padding: 6px 14px;
+      border-radius: 7px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       transition: all 0.2s ease;
     }
     .btn-header-sync { background-color: #00965e; border: 1px solid #00965e; color: #ffffff; }
@@ -114,12 +114,12 @@
     /* ESTILOS DOS CARDS OPERACIONAIS */
     .card-kpi { 
       border: none; 
-      border-radius: 8px; 
+      border-radius: 7px; 
       box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
-      padding: 8px 9px !important;
+      padding: 6px 8px !important;
     }
     .card-kpi small {
-      font-size: 0.62rem !important;
+      font-size: 0.58rem !important;
       letter-spacing: 0.2px;
       display: block;
       line-height: 1.1;
@@ -128,29 +128,29 @@
       text-overflow: ellipsis;
     }
     .card-kpi h3 {
-      font-size: 1.35rem !important;
+      font-size: 1.22rem !important;
       font-weight: 800;
       line-height: 1.2;
-      margin-top: 3px !important;
+      margin-top: 2px !important;
     }
 
     /* CARD TRIPLO DE SLA */
     .card-kpi-sla {
       border: none;
-      border-radius: 8px;
+      border-radius: 7px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      padding: 6px 10px !important;
+      padding: 5px 8px !important;
       border-left: 4px solid #198754;
     }
     .card-kpi-sla .sla-col {
       text-align: center;
-      padding: 0 4px;
+      padding: 0 3px;
     }
     .card-kpi-sla .sla-col:not(:last-child) {
       border-right: 1px solid #e2e8f0;
     }
     .card-kpi-sla small {
-      font-size: 0.58rem !important;
+      font-size: 0.55rem !important;
       font-weight: 700;
       letter-spacing: 0.2px;
       display: block;
@@ -158,21 +158,21 @@
       white-space: nowrap;
     }
     .card-kpi-sla h3 {
-      font-size: 1.28rem !important;
+      font-size: 1.18rem !important;
       font-weight: 800;
       line-height: 1.2;
-      margin-top: 3px !important;
+      margin-top: 2px !important;
     }
 
     .card-filtros {
       border: none;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      padding: 7px 14px !important;
-      margin-bottom: 14px;
+      padding: 6px 12px !important;
+      margin-bottom: 12px;
     }
     .card-filtros .filtro-label {
-      font-size: 0.70rem !important;
+      font-size: 0.67rem !important;
       font-weight: 700;
       color: #334155;
       margin-bottom: 2px !important;
@@ -181,23 +181,30 @@
     }
     .card-filtros .form-control-sm,
     .card-filtros .form-select-sm {
-      font-size: 0.80rem !important;
-      height: 30px !important;
+      font-size: 0.77rem !important;
+      height: 28px !important;
       padding-top: 2px !important;
       padding-bottom: 2px !important;
-      padding-left: 8px !important;
+      padding-left: 7px !important;
       border-color: #cbd5e1;
-      border-radius: 6px;
+      border-radius: 5px;
     }
 
-    .badge-vencendo { background-color: #ffc107; color: #000; font-weight: bold; }
-    .badge-fora { background-color: #dc3545; color: #fff; font-weight: bold; }
+    /* BADGES DE PRIORIDADE COM AS CORES DO GRÁFICO */
+    .badge-prio-1 { background-color: #dc3545 !important; color: #ffffff !important; font-weight: 700; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; }
+    .badge-prio-2 { background-color: #fd7e14 !important; color: #ffffff !important; font-weight: 700; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; }
+    .badge-prio-3 { background-color: #ffc107 !important; color: #000000 !important; font-weight: 700; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; }
+    .badge-prio-4 { background-color: #0dcaf0 !important; color: #000000 !important; font-weight: 700; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; }
+    .badge-prio-def { background-color: #212529 !important; color: #ffffff !important; font-weight: 700; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; }
+
+    .badge-vencendo { background-color: #ffc107; color: #000; font-weight: bold; font-size: 0.74rem; }
+    .badge-fora { background-color: #dc3545; color: #fff; font-weight: bold; font-size: 0.74rem; }
     
     .badge-no-prazo {
       background: transparent !important;
       color: #198754 !important;
       font-weight: 700;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       letter-spacing: 0.2px;
       border: none !important;
       padding: 0;
@@ -207,6 +214,7 @@
       background-color: #6c757d !important;
       color: #ffffff !important;
       font-weight: 600;
+      font-size: 0.74rem;
     }
 
     .btn-acao-tabela {
@@ -214,12 +222,12 @@
       border: 1px solid #cbd5e1;
       color: #0f172a;
       font-weight: 600;
-      font-size: 0.78rem;
-      padding: 3px 10px;
-      border-radius: 6px;
+      font-size: 0.74rem;
+      padding: 2px 8px;
+      border-radius: 5px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       transition: all 0.2s ease;
     }
     .btn-acao-tabela:hover {
@@ -229,25 +237,25 @@
     }
     .btn-acao-tabela i {
       color: #1e3a8a;
-      font-size: 0.85rem;
+      font-size: 0.80rem;
     }
 
-    .table td, .table th { vertical-align: middle; }
-    .obs-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .table td, .table th { vertical-align: middle; padding: 6px 8px; font-size: 0.79rem; }
+    .obs-cell { max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .chart-container-card {
       background: #ffffff;
       border-radius: 10px;
       border: none;
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      padding: 14px 18px;
+      padding: 12px 16px;
       height: 100%;
     }
 
     .pagination .page-link {
       color: #0b1325;
-      font-size: 0.8rem;
-      padding: 5px 11px;
+      font-size: 0.76rem;
+      padding: 4px 9px;
     }
     .pagination .page-item.active .page-link {
       background-color: #0b1325;
@@ -256,7 +264,7 @@
     }
 
     @media print {
-      body { background-color: #fff; font-size: 10pt; }
+      body { background-color: #fff; font-size: 9pt; }
       .header-painel, .btn, .modal, .card-kpi, .card-filtros, .chart-container-card, .chart-row, .card-footer-paginacao { display: none !important; }
       .table { width: 100% !important; }
     }
@@ -304,15 +312,15 @@
     <div class="row g-2 mb-3 align-items-stretch" style="flex-wrap: nowrap; overflow-x: auto;">
       
       <!-- 1. TOTAL TA -->
-      <div style="flex: 1 1 10%; min-width: 95px;">
+      <div style="flex: 1 1 9%; min-width: 90px;">
         <div class="card card-kpi bg-white border-start border-primary border-4 h-100">
           <small class="text-muted fw-bold">TOTAL TAs</small>
           <h3 id="card-total" class="m-0 text-primary">0</h3>
         </div>
       </div>
 
-      <!-- 2. SLA TRIPLO (NO PRAZO | VENCENDO | FORA) - OCUPA O ESPAÇO DE 2 CARDS -->
-      <div style="flex: 2 1 20%; min-width: 220px;">
+      <!-- 2. SLA TRIPLO (NO PRAZO | VENCENDO | FORA) -->
+      <div style="flex: 2 1 19%; min-width: 210px;">
         <div class="card card-kpi-sla bg-white h-100 d-flex flex-column justify-content-center">
           <div class="d-flex justify-content-between align-items-center">
             <div class="sla-col flex-fill">
@@ -332,7 +340,7 @@
       </div>
 
       <!-- 3. TRATATIVAS (IN-LOCO) -->
-      <div style="flex: 1 1 12%; min-width: 125px;">
+      <div style="flex: 1 1 12%; min-width: 120px;">
         <div class="card card-kpi bg-white border-start border-success border-4 h-100">
           <small class="text-muted fw-bold">TRATATIVAS (IN-LOCO)</small>
           <h3 id="card-inloco" class="m-0 text-success">0</h3>
@@ -340,7 +348,7 @@
       </div>
 
       <!-- 4. EM DESLOCAMENTO -->
-      <div style="flex: 1 1 11%; min-width: 110px;">
+      <div style="flex: 1 1 10%; min-width: 105px;">
         <div class="card card-kpi bg-white border-start border-info border-4 h-100">
           <small class="text-muted fw-bold">EM DESLOCAMENTO</small>
           <h3 id="card-deslocamento" class="m-0 text-info">0</h3>
@@ -348,31 +356,39 @@
       </div>
 
       <!-- 5. REDE EXTERNA -->
-      <div style="flex: 1 1 11%; min-width: 105px;">
+      <div style="flex: 1 1 10%; min-width: 100px;">
         <div class="card card-kpi bg-white border-start border-4 h-100" style="border-left-color: #6f42c1 !important;">
           <small class="text-muted fw-bold">REDE EXTERNA</small>
           <h3 id="card-rede-externa" class="m-0" style="color: #6f42c1;">0</h3>
         </div>
       </div>
 
-      <!-- 6. GMG ACOPL. -->
-      <div style="flex: 1 1 10%; min-width: 100px;">
+      <!-- 6. RESTRIÇÃO DE ACESSO -->
+      <div style="flex: 1 1 11%; min-width: 110px;">
+        <div class="card card-kpi bg-white border-start border-4 h-100" style="border-left-color: #fd7e14 !important;">
+          <small class="text-muted fw-bold">RESTR. ACESSO</small>
+          <h3 id="card-liberacao-acesso" class="m-0" style="color: #fd7e14;">0</h3>
+        </div>
+      </div>
+
+      <!-- 7. GMG ACOPL. -->
+      <div style="flex: 1 1 9%; min-width: 90px;">
         <div class="card card-kpi bg-white border-start border-success border-4 h-100" style="border-left-color: #198754 !important;">
           <small class="text-muted fw-bold">GMG ACOPL.</small>
           <h3 id="card-gmg" class="m-0 text-success">0</h3>
         </div>
       </div>
 
-      <!-- 7. GMG EM DESLOCAMENTO (DEM DESLOCAMENTO) -->
-      <div style="flex: 1 1 12%; min-width: 125px;">
+      <!-- 8. DEM DESLOCAMENTO -->
+      <div style="flex: 1 1 11%; min-width: 115px;">
         <div class="card card-kpi bg-white border-start border-4 h-100" style="border-left-color: #0dcaf0 !important;">
           <small class="text-muted fw-bold">DEM DESLOCAMENTO</small>
           <h3 id="card-gmg-deslocamento" class="m-0 text-info">0</h3>
         </div>
       </div>
 
-      <!-- 8. FILA DE ATENDIMENTO -->
-      <div style="flex: 1 1 14%; min-width: 130px;">
+      <!-- 9. FILA DE ATENDIMENTO (AGUARDANDO TÉCNICO OU PENDENTE) -->
+      <div style="flex: 1 1 13%; min-width: 125px;">
         <div class="card card-kpi bg-white border-start border-secondary border-4 h-100">
           <small class="text-muted fw-bold">FILA DE ATENDIMENTO</small>
           <h3 id="card-fila-atendimento" class="m-0 text-secondary">0</h3>
@@ -424,10 +440,10 @@
       <div class="col-lg-7">
         <div class="chart-container-card">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Volume por DDD vs Status Pendente</h6>
-            <small class="text-muted">Colunas: Volume Total | Linha: Pendente</small>
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Volume por DDD vs Fila de Atendimento</h6>
+            <small class="text-muted">Colunas: Volume Total | Linha: Pendente / Aguardando</small>
           </div>
-          <div style="position: relative; height: 240px; width: 100%;">
+          <div style="position: relative; height: 230px; width: 100%;">
             <canvas id="graficoDddSla"></canvas>
           </div>
         </div>
@@ -439,7 +455,7 @@
             <h6 class="m-0 fw-bold text-dark"><i class="bi bi-distribute-horizontal text-primary me-2"></i>Distribuição por Prioridade</h6>
             <small class="text-muted">Extremidade: Volume | Interna: %</small>
           </div>
-          <div style="position: relative; height: 240px; width: 100%;">
+          <div style="position: relative; height: 230px; width: 100%;">
             <canvas id="graficoPrioridades"></canvas>
           </div>
         </div>
@@ -470,7 +486,7 @@
         </table>
       </div>
 
-      <div class="card-footer card-footer-paginacao bg-light d-flex flex-wrap justify-content-between align-items-center p-3 border-top">
+      <div class="card-footer card-footer-paginacao bg-light d-flex flex-wrap justify-content-between align-items-center p-2 border-top">
         <div id="txt-info-paginacao" class="small text-muted mb-2 mb-md-0">
           Mostrando 0 até 0 de 0 TAs
         </div>
@@ -516,6 +532,7 @@
             <label class="form-label small fw-bold">Status de Atendimento:</label>
             <select id="modal-status-op" class="form-select form-select-sm">
               <option value="Pendente">Pendente</option>
+              <option value="Aguardando Técnico">Aguardando Técnico</option>
               <option value="Técnico em Tratativas (in loco)">Técnico em Tratativas (in loco)</option>
               <option value="Aguardando baixa do Astro">Aguardando baixa do Astro</option>
               <option value="Em deslocamento">Em deslocamento</option>
@@ -524,7 +541,6 @@
               <option value="Restrição de Acesso">Restrição de Acesso</option>
               <option value="Com GMG acoplado">Com GMG acoplado</option>
               <option value="GMG em deslocamento">GMG em deslocamento</option>
-              <option value="Fila de Atendimento">Fila de Atendimento</option>
               <option value="Encerrado">Encerrado</option>
             </select>
           </div>
@@ -579,8 +595,8 @@
       if (sLower === "restrição de acesso" || sLower === "restricao de acesso") {
         return "Restrição de Acesso";
       }
-      if (sLower === "análise de mão de obra" || sLower === "analise de mao de obra" || sLower === "aguardando sobressalente" || sLower === "fila de atendimento") {
-        return "Fila de Atendimento";
+      if (sLower === "aguard. liberação acesso" || sLower === "aguard. liberacao acesso") {
+        return "Aguard. Liberação Acesso";
       }
       if (sLower === "com gmg acoplado" || sLower === "gmg acoplado" || sLower === "gmg acopl.") {
         return "Com GMG acoplado";
@@ -588,10 +604,23 @@
       if (sLower === "gmg em deslocamento" || sLower === "dem deslocamento" || sLower === "deslocamento gmg") {
         return "GMG em deslocamento";
       }
+      if (sLower === "aguardando técnico" || sLower === "aguardando tecnico") {
+        return "Aguardando Técnico";
+      }
       if (sLower === "concluído" || sLower === "concluido" || sLower === "encerrado") {
         return "Encerrado";
       }
       return s || "Pendente";
+    }
+
+    // Retorna a classe de badge com a cor exata do gráfico para a coluna Prioridade
+    function obterClassePrioridade(prio) {
+      const p = String(prio || "").trim().toUpperCase();
+      if (p === "1" || p === "P1") return "badge-prio-1"; // Vermelho
+      if (p === "2" || p === "P2") return "badge-prio-2"; // Laranja
+      if (p === "3" || p === "P3") return "badge-prio-3"; // Amarelo
+      if (p === "4" || p === "P4") return "badge-prio-4"; // Ciano
+      return "badge-prio-def";
     }
 
     function obterEstiloTempoGestor(tempoStr) {
@@ -768,14 +797,21 @@
       // 5. REDE EXTERNA
       document.getElementById('card-rede-externa').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Rede Externa').length;
 
-      // 6. GMG ACOPL.
+      // 6. RESTRIÇÃO DE ACESSO
+      document.getElementById('card-liberacao-acesso').innerText = dadosFiltradosAtuais.filter(d => 
+        d.status_atendimento === 'Restrição de Acesso' || d.status_atendimento === 'Aguard. Liberação Acesso'
+      ).length;
+
+      // 7. GMG ACOPL.
       document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
 
-      // 7. GMG EM DESLOCAMENTO (DEM DESLOCAMENTO)
+      // 8. GMG EM DESLOCAMENTO (DEM DESLOCAMENTO)
       document.getElementById('card-gmg-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'GMG em deslocamento').length;
 
-      // 8. FILA DE ATENDIMENTO
-      document.getElementById('card-fila-atendimento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Fila de Atendimento').length;
+      // 9. FILA DE ATENDIMENTO = AGUARDANDO TÉCNICO OU PENDENTE
+      document.getElementById('card-fila-atendimento').innerText = dadosFiltradosAtuais.filter(d => 
+        d.status_atendimento === 'Pendente' || d.status_atendimento === 'Aguardando Técnico' || d.status_atendimento === 'Fila de Atendimento'
+      ).length;
 
       renderizarGraficoDdd(dadosFiltradosAtuais);
       renderizarGraficoPrioridades(dadosFiltradosAtuais);
@@ -825,8 +861,6 @@
           statusBadgeClass = 'badge text-white';
         } else if (statusAtual === 'Encerrado') {
           statusBadgeClass = 'badge bg-dark text-white';
-        } else if (statusAtual === 'Fila de Atendimento') {
-          statusBadgeClass = 'badge bg-secondary text-white';
         } else if (statusAtual === 'Com GMG acoplado') {
           statusBadgeClass = 'badge bg-success text-white';
         } else if (statusAtual === 'GMG em deslocamento') {
@@ -837,6 +871,7 @@
                           (statusAtual === 'Aguard. Liberação Acesso' || statusAtual === 'Restrição de Acesso') ? 'style="background-color: #fd7e14;"' : '';
 
         const estiloTempo = obterEstiloTempoGestor(d.tempo_gestor);
+        const classePrio = obterClassePrioridade(d.prioridade);
 
         tbody.innerHTML += `
           <tr>
@@ -847,7 +882,7 @@
             </td>
             <td><strong>${d.ta}</strong></td>
             <td>${d.ddd}</td>
-            <td><span class="badge bg-dark">${d.prioridade}</span></td>
+            <td><span class="${classePrio}">${d.prioridade}</span></td>
             <td>
               <div><strong>${d.site}</strong> - ${d.localidade}</div>
               <small class="text-muted">${d.site_nome}</small>
@@ -923,12 +958,14 @@
     function renderizarGraficoDdd(dados) {
       const dddsUnicos = [...new Set(dados.map(d => d.ddd))].filter(Boolean).sort();
       const volumeTotal = [];
-      const volumePendente = [];
+      const volumeFila = [];
 
       dddsUnicos.forEach(ddd => {
         const itensDdd = dados.filter(d => d.ddd === ddd);
         volumeTotal.push(itensDdd.length);
-        volumePendente.push(itensDdd.filter(d => d.status_atendimento === 'Pendente' || d.status_atendimento === 'Aguardando Técnico').length);
+        volumeFila.push(itensDdd.filter(d => 
+          d.status_atendimento === 'Pendente' || d.status_atendimento === 'Aguardando Técnico' || d.status_atendimento === 'Fila de Atendimento'
+        ).length);
       });
 
       const ctx = document.getElementById('graficoDddSla').getContext('2d');
@@ -953,8 +990,8 @@
             },
             {
               type: 'line',
-              label: 'Pendente',
-              data: volumePendente,
+              label: 'Fila de Atendimento',
+              data: volumeFila,
               borderColor: '#fd7e14',
               backgroundColor: '#fd7e14',
               borderWidth: 2.5,
