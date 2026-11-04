@@ -10,18 +10,20 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <!-- SCRIPT DE AUTO-ATUALIZAÇÃO FORÇADA DE CACHE -->
+  <!-- SCRIPT DE CONTROLE DE VERSÃO LIMPO -->
   <script>
     (function() {
-      const VERSAO_ATUAL = "1.6.0";
-      const versaoArmazenada = localStorage.getItem("app_versao_portal_tas");
+      const VERSAO_ATUAL = "v2";
 
-      if (versaoArmazenada !== VERSAO_ATUAL) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const versaoSalva = localStorage.getItem("app_versao_portal_tas");
+
+      if (versaoSalva !== VERSAO_ATUAL) {
         localStorage.setItem("app_versao_portal_tas", VERSAO_ATUAL);
-        if (!window.location.search.includes("v=" + VERSAO_ATUAL)) {
-          const separador = window.location.search ? "&" : "?";
-          window.location.replace(window.location.pathname + window.location.search + separador + "v=" + VERSAO_ATUAL);
-        }
+        urlParams.set("v", VERSAO_ATUAL);
+        window.location.replace(window.location.pathname + "?" + urlParams.toString());
+      } else if (urlParams.has("v")) {
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
     })();
   </script>
@@ -190,14 +192,16 @@
       border-radius: 5px;
     }
 
-    /* BADGES DE PRIORIDADE COM AS CORES DO GRÁFICO */
-    .badge-prio-1 { background-color: #dc3545 !important; color: #ffffff !important; font-weight: 700; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; }
-    .badge-prio-2 { background-color: #fd7e14 !important; color: #ffffff !important; font-weight: 700; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; }
-    .badge-prio-3 { background-color: #ffc107 !important; color: #000000 !important; font-weight: 700; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; }
-    .badge-prio-4 { background-color: #0dcaf0 !important; color: #000000 !important; font-weight: 700; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; }
-    .badge-prio-def { background-color: #212529 !important; color: #ffffff !important; font-weight: 700; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; }
+    /* BADGES DE PRIORIDADE COM FONTE MENOR */
+    .badge-prio-1 { background-color: #dc3545 !important; color: #ffffff !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
+    .badge-prio-2 { background-color: #fd7e14 !important; color: #ffffff !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
+    .badge-prio-3 { background-color: #ffc107 !important; color: #000000 !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
+    .badge-prio-4 { background-color: #0dcaf0 !important; color: #000000 !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
+    .badge-prio-def { background-color: #212529 !important; color: #ffffff !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
 
+    /* BADGES DE SLA */
     .badge-vencendo { background-color: #ffc107; color: #000; font-weight: bold; font-size: 0.74rem; }
+    .badge-vencendo-20m { background-color: #dc3545 !important; color: #ffffff !important; font-weight: bold; font-size: 0.74rem; }
     .badge-fora { background-color: #dc3545; color: #fff; font-weight: bold; font-size: 0.74rem; }
     
     .badge-no-prazo {
@@ -387,7 +391,7 @@
         </div>
       </div>
 
-      <!-- 9. FILA DE ATENDIMENTO (AGUARDANDO TÉCNICO OU PENDENTE) -->
+      <!-- 9. FILA DE ATENDIMENTO -->
       <div style="flex: 1 1 13%; min-width: 125px;">
         <div class="card card-kpi bg-white border-start border-secondary border-4 h-100">
           <small class="text-muted fw-bold">FILA DE ATENDIMENTO</small>
@@ -613,13 +617,12 @@
       return s || "Pendente";
     }
 
-    // Retorna a classe de badge com a cor exata do gráfico para a coluna Prioridade
     function obterClassePrioridade(prio) {
       const p = String(prio || "").trim().toUpperCase();
-      if (p === "1" || p === "P1") return "badge-prio-1"; // Vermelho
-      if (p === "2" || p === "P2") return "badge-prio-2"; // Laranja
-      if (p === "3" || p === "P3") return "badge-prio-3"; // Amarelo
-      if (p === "4" || p === "P4") return "badge-prio-4"; // Ciano
+      if (p === "1" || p === "P1") return "badge-prio-1";
+      if (p === "2" || p === "P2") return "badge-prio-2";
+      if (p === "3" || p === "P3") return "badge-prio-3";
+      if (p === "4" || p === "P4") return "badge-prio-4";
       return "badge-prio-def";
     }
 
@@ -808,7 +811,7 @@
       // 8. GMG EM DESLOCAMENTO (DEM DESLOCAMENTO)
       document.getElementById('card-gmg-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'GMG em deslocamento').length;
 
-      // 9. FILA DE ATENDIMENTO = AGUARDANDO TÉCNICO OU PENDENTE
+      // 9. FILA DE ATENDIMENTO (AGUARDANDO TÉCNICO OU PENDENTE)
       document.getElementById('card-fila-atendimento').innerText = dadosFiltradosAtuais.filter(d => 
         d.status_atendimento === 'Pendente' || d.status_atendimento === 'Aguardando Técnico' || d.status_atendimento === 'Fila de Atendimento'
       ).length;
@@ -840,7 +843,11 @@
       dadosPagina.forEach(d => {
         let slaBadgeClass = 'badge bg-secondary';
         const sla = (d.status_sla || '').toUpperCase();
-        if (sla.includes('VENCENDO')) {
+        
+        // VENCENDO-20M EM VERMELHO
+        if (sla.includes('VENCENDO-20M') || sla.includes('VENCENDO - 20M') || sla.includes('VENCENDO 20M')) {
+          slaBadgeClass = 'badge badge-vencendo-20m';
+        } else if (sla.includes('VENCENDO')) {
           slaBadgeClass = 'badge badge-vencendo';
         } else if (sla.includes('FORA')) {
           slaBadgeClass = 'badge badge-fora';
@@ -1006,7 +1013,7 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11, weight: '600' } } },
+            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10.5, weight: '600' } } },
             tooltip: { mode: 'index', intersect: false }
           },
           scales: {
@@ -1039,18 +1046,18 @@
               const pct = totalGeral > 0 ? ((val / totalGeral) * 100).toFixed(1) + '%' : '0%';
               
               ctx.save();
-              ctx.font = 'bold 11px sans-serif';
+              ctx.font = 'bold 10px sans-serif';
 
               ctx.fillStyle = '#ffffff';
               ctx.textAlign = 'left';
               ctx.textBaseline = 'middle';
-              if (bar.x - bar.base > 45) {
-                ctx.fillText(pct, bar.base + 8, bar.y);
+              if (bar.x - bar.base > 40) {
+                ctx.fillText(pct, bar.base + 6, bar.y);
               }
 
               ctx.fillStyle = '#212529';
               ctx.textAlign = 'left';
-              ctx.fillText(`${val} TAs`, bar.x + 6, bar.y);
+              ctx.fillText(`${val} TAs`, bar.x + 5, bar.y);
 
               ctx.restore();
             });
@@ -1097,7 +1104,7 @@
             }
           },
           layout: {
-            padding: { right: 55 }
+            padding: { right: 50 }
           },
           scales: {
             x: {
@@ -1107,7 +1114,7 @@
             },
             y: {
               grid: { display: false },
-              ticks: { font: { weight: 'bold', size: 12 } }
+              ticks: { font: { weight: 'bold', size: 11 } }
             }
           }
         },
