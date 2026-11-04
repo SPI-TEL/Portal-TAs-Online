@@ -349,6 +349,8 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqo-oRoCVNXTJE8RxAnfQcNWPty232zFuVArT6l-1w4CnsSLO7YETVeBsKPWh0SkwX8wVg-VT7Vb80/pub?gid=2115875129&single=true&output=csv";
+    
+    // Cole aqui a URL gerada em Apps Script > Implantar > Gerenciar Implantações > App da Web
     const URL_APPS_SCRIPT_WEBAPP = "COLE_AQUI_A_URL_DO_WEBAPP_APPS_SCRIPT";
 
     let dadosGlobais = [];
@@ -388,7 +390,6 @@
           }
 
           dadosGlobais = results.data.map(r => {
-            // Mapeia todas as possíveis variações do nome da coluna "Tipo Rede"
             const tipoRedeExtraido = r["TIpo Rede"] || r["Tipo Rede"] || r["Tipo de Rede"] || r["Rede"] || "";
 
             return {
@@ -652,7 +653,6 @@
       XLSX.writeFile(wb, `Base_TAs_${dataHora}.xlsx`);
     }
 
-    // ABERTURA DA MODAL COM TIPO DE REDE PRÉ-CARREGADO E FLEXÍVEL
     function abrirModal(idTa) {
       const item = dadosGlobais.find(d => String(d.ta) === String(idTa));
       if (!item) return;
@@ -660,7 +660,6 @@
       document.getElementById('modal-ta-id').innerText = item.ta;
       document.getElementById('modal-detalhe-site').innerText = `${item.site} | ${item.site_nome} (${item.localidade} - DDD ${item.ddd})`;
       
-      // Carrega o tipo de rede atual e garante que ele esteja nas opções do select
       const selectRede = document.getElementById('modal-tipo-rede');
       const redeAtual = (item.tipo_rede || '').trim();
       
@@ -673,7 +672,6 @@
             break;
           }
         }
-        // Se for um tipo de rede diferente dos pré-definidos, insere na hora e seleciona
         if (!opcaoExiste) {
           const novaOpcao = new Option(redeAtual, redeAtual, true, true);
           selectRede.add(novaOpcao);
