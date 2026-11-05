@@ -13,7 +13,7 @@
   <!-- SCRIPT DE CONTROLE DE VERSÃO LIMPO -->
   <script>
     (function() {
-      const VERSAO_ATUAL = "v6";
+      const VERSAO_ATUAL = "v7";
 
       const urlParams = new URLSearchParams(window.location.search);
       const versaoSalva = localStorage.getItem("app_versao_portal_tas");
@@ -112,7 +112,7 @@
     .btn-header-excel { background-color: #1b63ff; border: 1px solid #1b63ff; color: #ffffff; }
     .btn-header-excel:hover { background-color: #0f4ee6; color: #ffffff; }
 
-    /* ESTILOS DOS CARDS OPERACIONAIS */
+    /* CARDS OPERACIONAIS */
     .card-kpi { 
       border: none; 
       border-radius: 7px; 
@@ -244,7 +244,7 @@
     }
 
     .table td, .table th { vertical-align: middle; padding: 6px 8px; font-size: 0.79rem; }
-    .obs-cell { max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .obs-cell { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .chart-container-card {
       background: #ffffff;
@@ -570,7 +570,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // ENDPOINT PÚBLICO DIRETO DO APPS SCRIPT (TEMPO REAL E SEM BLOQUEIO DE CORS)
+    // ENDPOINT PÚBLICO DIRETO DO APPS SCRIPT
     const URL_APPS_SCRIPT_WEBAPP = "https://script.google.com/macros/s/AKfycbwfh2H8Kdsl4MW2p4GsHK2x2fZCscGnCHIPxG3zyjn4jl-bSZ_iznHBAa0uulq9Z2pK/exec";
 
     const ITENS_POR_PAGINA = 70;
@@ -581,6 +581,36 @@
     let modalInstance = null;
     let chartInstanceDdd = null;
     let chartInstancePrio = null;
+
+    // FORMATAÇÃO UNIVERSAL DE DATA E HORA PARA O PADRÃO: dd/mm/aaaa hh:mm
+    function formatarDataHoraBrasileira(valor) {
+      if (!valor) return "-";
+      const s = String(valor).trim();
+      if (!s || s === "-") return "-";
+
+      // Se já estiver no formato brasileiro com barras
+      if (/^\d{2}\/\d{2}\/\d{4}/.test(s) || /^\d{2}\/\d{2}/.test(s)) {
+        return s;
+      }
+
+      // Tenta converter se for ISO (2026-11-06T...) ou data em inglês (Thu Nov 05...)
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        const dia = String(d.getDate()).padStart(2, '0');
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const ano = d.getFullYear();
+        const hora = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+
+        // Se o horário for zerado (ex: 2026-11-06T00:00:00.000Z), exibe só a data
+        if (hora === "00" && min === "00" && s.includes("T00:00:00")) {
+          return `${dia}/${mes}/${ano}`;
+        }
+        return `${dia}/${mes}/${ano} ${hora}:${min}`;
+      }
+
+      return s;
+    }
 
     function limparTexto(txt) {
       if (!txt) return "";
@@ -673,7 +703,6 @@
       carregarDados();
     };
 
-    // LEITURA EM TEMPO REAL DIRETAMENTE DO APPS SCRIPT VIA JSON
     function carregarDados() {
       document.getElementById('txt-ultima-sync').innerText = "Carregando...";
       const urlConsulta = URL_APPS_SCRIPT_WEBAPP + "?_t=" + new Date().getTime();
@@ -700,6 +729,10 @@
             const statusBruto = getProp(r, "Status Atendimento", "Status de Atendimento", "status_atendimento");
             const statusTratado = normalizarStatus(statusBruto);
 
+            // Formatação tratada da previsão e observação
+            const previsaoBruta = getProp(r, "Previsão", "Previsao");
+            const previsaoFormatada = formatarDataHoraBrasileira(previsaoBruta);
+
             return {
               ta: getProp(r, "TA", "ta"),
               ddd: getProp(r, "DDD", "ddd"),
@@ -716,7 +749,7 @@
               status_sla: getProp(r, "STATUS SLA", "Status SLA", "SLA"),
               tipo_rede: tipoRedePlanilha,
               status_atendimento: statusTratado,
-              previsao: getProp(r, "Previsão", "Previsao"),
+              previsao: previsaoFormatada,
               observacao: getProp(r, "Observação", "Observacao", "Historico")
             };
           }).filter(d => d.ta && d.ta.trim() !== "");
@@ -729,7 +762,7 @@
           document.getElementById('txt-ultima-sync').innerText = agora;
           
           if (resposta.dataAtualizacao) {
-            document.getElementById('txt-base-atualizada').innerText = `Base atualizada: ${resposta.dataAtualizacao}`;
+            document.getElementById('txt-base-atualizada').innerText = `Base atualizada: ${formatarDataHoraBrasileira(resposta.dataAtualizacao)}`;
           } else {
             document.getElementById('txt-base-atualizada').innerText = `Base atualizada: ${dadosGlobais.length} TAs`;
           }
@@ -829,7 +862,6 @@
       renderizarGraficoDdd(dadosFiltradosAtuais);
       renderizarGraficoPrioridades(dadosFiltradosAtuais);
 
-      // Paginação
       const totalRegistros = dadosFiltradosAtuais.length;
       const totalPaginas = Math.ceil(totalRegistros / ITENS_POR_PAGINA) || 1;
 
@@ -1227,11 +1259,11 @@
         if (item) {
           item.tipo_rede = tipoRede;
           item.status_atendimento = novoStatus;
-          item.previsao = novaPrevisao;
+          item.previsao = novaPrevisao ? formatarDataHoraBrasileira(novaPrevisao) : item.previsao;
           if (novaObs.trim()) {
-            const dataHoraAgora = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+            const dataHoraAgora = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'}) + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
             const entrada = `[${dataHoraAgora}] ${novaObs.trim()}`;
-            item.observacao = item.observacao ? `${entrada}\n---\n${item.observacao}` : entrada;
+            item.observacao = item.observacao ? `${entrada} --- ${item.observacao}` : entrada;
           }
         }
         renderizar();
