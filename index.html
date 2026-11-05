@@ -13,7 +13,7 @@
   <!-- SCRIPT DE CONTROLE DE VERSÃO LIMPO -->
   <script>
     (function() {
-      const VERSAO_ATUAL = "v9";
+      const VERSAO_ATUAL = "v10";
 
       const urlParams = new URLSearchParams(window.location.search);
       const versaoSalva = localStorage.getItem("app_versao_portal_tas");
@@ -911,14 +911,12 @@
       preencherMultiOptions('sla', [...new Set(dados.map(d => d.status_sla))].filter(Boolean).sort());
       preencherMultiOptions('rede', [...new Set(dados.map(d => d.tipo_rede))].filter(Boolean).sort());
 
-      // Lista de status com 'Fila de Atendimento' em destaque
       const statusUnicos = [...new Set(dados.map(d => d.status_atendimento))].filter(Boolean);
       ['Pendente GMG', 'Sobressalente'].forEach(st => {
         if (!statusUnicos.includes(st)) statusUnicos.push(st);
       });
       statusUnicos.sort();
 
-      // Inclui a opção especial 'Fila de Atendimento' no topo
       preencherMultiOptions('status', ['Fila de Atendimento', ...statusUnicos]);
     }
 
@@ -1004,19 +1002,11 @@
           atendeEncerramento = isEncerrado;
         }
 
-        // Filtro DDD Multi
         const atendeDdd = selDdds.length === 0 || selDdds.includes(String(d.ddd));
-
-        // Filtro Prioridade Multi
         const atendePrio = selPrios.length === 0 || selPrios.includes(String(d.prioridade));
-
-        // Filtro SLA Multi
         const atendeSla = selSlas.length === 0 || selSlas.includes(String(d.status_sla));
-
-        // Filtro Rede Multi
         const atendeRede = selRedes.length === 0 || selRedes.includes(String(d.tipo_rede));
 
-        // Filtro Status Multi (com tratamento especial para 'Fila de Atendimento')
         let atendeStatusOp = false;
         if (selStatus.length === 0) {
           atendeStatusOp = true;
@@ -1220,7 +1210,7 @@
       document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // RENDERIZAÇÃO DO GRÁFICO DE VOLUME COM RÓTULOS DE DADOS VISÍVEIS DIRETAMENTE
+    // RENDERIZAÇÃO DO GRÁFICO DE VOLUME COM RÓTULOS NÍTIDOS E DISTANCIADOS
     function renderizarGraficoDdd(dados) {
       const dddsUnicos = [...new Set(dados.map(d => d.ddd))].filter(Boolean).sort();
       const volumeTotal = [];
@@ -1234,7 +1224,6 @@
         ).length);
       });
 
-      // Plugin personalizado para desenhar os números no topo das barras e sobre os pontos
       const rotulosVolumePlugin = {
         id: 'rotulosVolumePlugin',
         afterDatasetsDraw(chart) {
@@ -1243,18 +1232,43 @@
             const meta = chart.getDatasetMeta(i);
             meta.data.forEach((element, index) => {
               const val = dataset.data[index];
-              if (val === undefined || val === null || val === 0) return;
+              if (val === undefined || val === null) return;
 
               ctx.save();
-              ctx.font = 'bold 10px sans-serif';
+              ctx.font = 'bold 12px sans-serif';
               ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
 
               if (dataset.type === 'bar') {
-                ctx.fillStyle = '#0f172a';
-                ctx.fillText(val, element.x, element.y - 4);
+                if (val > 0) {
+                  ctx.fillStyle = '#0f172a';
+                  ctx.fillText(val, element.x, element.y - 10);
+                }
               } else if (dataset.type === 'line') {
-                ctx.fillStyle = '#d97706';
-                ctx.fillText(val, element.x, element.y - 8);
+                const texto = String(val);
+                const posPosY = element.y - 14;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#fd7e14';
+                ctx.lineWidth = 1.5;
+
+                const textWidth = ctx.measureText(texto).width;
+                const boxW = Math.max(textWidth + 8, 18);
+                const boxH = 16;
+                const boxX = element.x - (boxW / 2);
+                const boxY = posPosY - (boxH / 2);
+
+                ctx.beginPath();
+                if (ctx.roundRect) {
+                  ctx.roundRect(boxX, boxY, boxW, boxH, 4);
+                } else {
+                  ctx.rect(boxX, boxY, boxW, boxH);
+                }
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#c2410c';
+                ctx.fillText(texto, element.x, posPosY);
               }
               ctx.restore();
             });
@@ -1290,10 +1304,11 @@
               data: volumeFila,
               borderColor: '#fd7e14',
               backgroundColor: '#fd7e14',
-              borderWidth: 2.5,
+              borderWidth: 2.8,
               tension: 0.25,
               fill: false,
-              pointRadius: 4,
+              pointRadius: 5,
+              pointHoverRadius: 6,
               order: 1
             }
           ]
@@ -1302,17 +1317,17 @@
           responsive: true,
           maintainAspectRatio: false,
           layout: {
-            padding: { top: 18 }
+            padding: { top: 28, left: 10, right: 10 }
           },
           plugins: {
-            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10.5, weight: '600' } } },
+            legend: { position: 'top', labels: { boxWidth: 14, font: { size: 11, weight: '600' } } },
             tooltip: { mode: 'index', intersect: false }
           },
           scales: {
             x: { grid: { display: false } },
             y: { 
               beginAtZero: true, 
-              suggestedMax: maxVal + 2,
+              suggestedMax: maxVal + 4,
               ticks: { precision: 0 }, 
               grid: { color: 'rgba(0, 0, 0, 0.05)' } 
             }
