@@ -13,7 +13,7 @@
   <!-- SCRIPT DE CONTROLE DE VERSÃO LIMPO -->
   <script>
     (function() {
-      const VERSAO_ATUAL = "v2";
+      const VERSAO_ATUAL = "v4";
 
       const urlParams = new URLSearchParams(window.location.search);
       const versaoSalva = localStorage.getItem("app_versao_portal_tas");
@@ -192,7 +192,7 @@
       border-radius: 5px;
     }
 
-    /* BADGES DE PRIORIDADE COM FONTE MENOR */
+    /* BADGES DE PRIORIDADE COM AS CORES DO GRÁFICO */
     .badge-prio-1 { background-color: #dc3545 !important; color: #ffffff !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
     .badge-prio-2 { background-color: #fd7e14 !important; color: #ffffff !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
     .badge-prio-3 { background-color: #ffc107 !important; color: #000000 !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
@@ -502,7 +502,7 @@
 
   </div>
 
-  <!-- MODAL DE ATUALIZAÇÃO -->
+  <!-- MODAL DE ATUALIZAÇÃO COM HISTÓRICO PRESERVADO -->
   <div class="modal fade" id="modalObs" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -549,9 +549,16 @@
             </select>
           </div>
 
+          <!-- HISTÓRICO ANTERIOR PRESERVADO -->
+          <div class="mb-2" id="box-historico-anterior" style="display: none;">
+            <label class="form-label small fw-bold text-secondary mb-1">Histórico Anterior:</label>
+            <div id="modal-historico-visual" class="p-2 border rounded bg-light small" style="max-height: 90px; overflow-y: auto; white-space: pre-wrap; font-size: 0.75rem;"></div>
+          </div>
+
+          <!-- NOVO ANDAMENTO -->
           <div class="mb-2">
-            <label class="form-label small fw-bold">Observações / Andamento Técnico:</label>
-            <textarea id="modal-texto-obs" class="form-control" rows="4" placeholder="Insira o andamento técnico..."></textarea>
+            <label class="form-label small fw-bold">Novo Andamento / Observação:</label>
+            <textarea id="modal-texto-obs" class="form-control" rows="3" placeholder="Insira o novo andamento técnico..."></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -565,7 +572,9 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqo-oRoCVNXTJE8RxAnfQcNWPty232zFuVArT6l-1w4CnsSLO7YETVeBsKPWh0SkwX8wVg-VT7Vb80/pub?gid=2115875129&single=true&output=csv";
-    const URL_APPS_SCRIPT_WEBAPP = "COLE_AQUI_A_URL_DO_WEBAPP_APPS_SCRIPT";
+    
+    // URL PÚBLICA DEFINITIVA DO WEB APP
+    const URL_APPS_SCRIPT_WEBAPP = "https://script.google.com/macros/s/AKfycbwfh2H8Kdsl4MW2p4GsHK2x2fZCscGnCHIPxG3zyjn4jl-bSZ_iznHBAa0uulq9Z2pK/exec";
 
     const ITENS_POR_PAGINA = 70;
     let paginaAtual = 1;
@@ -811,7 +820,7 @@
       // 8. GMG EM DESLOCAMENTO (DEM DESLOCAMENTO)
       document.getElementById('card-gmg-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'GMG em deslocamento').length;
 
-      // 9. FILA DE ATENDIMENTO (AGUARDANDO TÉCNICO OU PENDENTE)
+      // 9. FILA DE ATENDIMENTO
       document.getElementById('card-fila-atendimento').innerText = dadosFiltradosAtuais.filter(d => 
         d.status_atendimento === 'Pendente' || d.status_atendimento === 'Aguardando Técnico' || d.status_atendimento === 'Fila de Atendimento'
       ).length;
@@ -844,7 +853,6 @@
         let slaBadgeClass = 'badge bg-secondary';
         const sla = (d.status_sla || '').toUpperCase();
         
-        // VENCENDO-20M EM VERMELHO
         if (sla.includes('VENCENDO-20M') || sla.includes('VENCENDO - 20M') || sla.includes('VENCENDO 20M')) {
           slaBadgeClass = 'badge badge-vencendo-20m';
         } else if (sla.includes('VENCENDO')) {
@@ -1164,43 +1172,26 @@
       document.getElementById('modal-detalhe-site').innerText = `${item.site} | ${item.site_nome} (${item.localidade} - DDD ${item.ddd})`;
       
       const selectRede = document.getElementById('modal-tipo-rede');
-      const redeAtual = (item.tipo_rede || '').trim();
-      
-      if (redeAtual) {
-        let opcaoExiste = false;
-        for (let i = 0; i < selectRede.options.length; i++) {
-          if (selectRede.options[i].value.toLowerCase() === redeAtual.toLowerCase()) {
-            selectRede.selectedIndex = i;
-            opcaoExiste = true;
-            break;
-          }
-        }
-        if (!opcaoExiste) {
-          const novaOpcao = new Option(redeAtual, redeAtual, true, true);
-          selectRede.add(novaOpcao);
-        }
-      } else {
-        selectRede.value = '';
-      }
+      selectRede.value = item.tipo_rede || '';
 
       document.getElementById('modal-previsao').value = item.previsao || '';
       
       const selectStatus = document.getElementById('modal-status-op');
       const statusPadronizado = normalizarStatus(item.status_atendimento);
+      selectStatus.value = statusPadronizado;
       
-      let statusExiste = false;
-      for (let i = 0; i < selectStatus.options.length; i++) {
-        if (selectStatus.options[i].value === statusPadronizado) {
-          selectStatus.selectedIndex = i;
-          statusExiste = true;
-          break;
-        }
+      // Exibe histórico se existir
+      const boxHistorico = document.getElementById('box-historico-anterior');
+      const visualHistorico = document.getElementById('modal-historico-visual');
+      if (item.observacao && item.observacao.trim() !== '') {
+        visualHistorico.innerText = item.observacao;
+        boxHistorico.style.display = 'block';
+      } else {
+        boxHistorico.style.display = 'none';
       }
-      if (!statusExiste) {
-        selectStatus.add(new Option(statusPadronizado, statusPadronizado, true, true));
-      }
-      
-      document.getElementById('modal-texto-obs').value = item.observacao || '';
+
+      // Campo para novo andamento limpo
+      document.getElementById('modal-texto-obs').value = '';
       modalInstance.show();
     }
 
@@ -1215,17 +1206,20 @@
       btn.disabled = true;
       btn.innerText = 'Salvando...';
 
+      const payload = JSON.stringify({
+        ta: idTa,
+        tipoRede: tipoRede,
+        statusAtendimento: novoStatus,
+        previsao: novaPrevisao,
+        observacao: novaObs
+      });
+
+      // text/plain com no-cors evita bloqueios de CORS e preflight no Google Apps Script
       fetch(URL_APPS_SCRIPT_WEBAPP, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ta: idTa,
-          tipoRede: tipoRede,
-          statusAtendimento: novoStatus,
-          previsao: novaPrevisao,
-          observacao: novaObs
-        })
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: payload
       }).then(() => {
         btn.disabled = false;
         btn.innerText = 'Salvar';
@@ -1236,7 +1230,11 @@
           item.tipo_rede = tipoRede;
           item.status_atendimento = novoStatus;
           item.previsao = novaPrevisao;
-          item.observacao = novaObs;
+          if (novaObs.trim()) {
+            const dataHoraAgora = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+            const entrada = `[${dataHoraAgora}] ${novaObs.trim()}`;
+            item.observacao = item.observacao ? `${entrada}\n---\n${item.observacao}` : entrada;
+          }
         }
         renderizar();
       }).catch(err => {
