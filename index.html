@@ -13,7 +13,7 @@
   <!-- SCRIPT DE CONTROLE DE VERSÃO LIMPO -->
   <script>
     (function() {
-      const VERSAO_ATUAL = "v4";
+      const VERSAO_ATUAL = "v5";
 
       const urlParams = new URLSearchParams(window.location.search);
       const versaoSalva = localStorage.getItem("app_versao_portal_tas");
@@ -192,7 +192,7 @@
       border-radius: 5px;
     }
 
-    /* BADGES DE PRIORIDADE COM AS CORES DO GRÁFICO */
+    /* BADGES DE PRIORIDADE */
     .badge-prio-1 { background-color: #dc3545 !important; color: #ffffff !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
     .badge-prio-2 { background-color: #fd7e14 !important; color: #ffffff !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
     .badge-prio-3 { background-color: #ffc107 !important; color: #000000 !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
@@ -571,9 +571,12 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqo-oRoCVNXTJE8RxAnfQcNWPty232zFuVArT6l-1w4CnsSLO7YETVeBsKPWh0SkwX8wVg-VT7Vb80/pub?gid=2115875129&single=true&output=csv";
+    // ENDPOINT DINÂMICO EM TEMPO REAL (SEM CACHE DE PUBLICAÇÃO)
+    const ID_PLANILHA = "1lHNRe6mzgAng9PoPpHh-JJygpNkSEUJ0JtZxD_9fOms";
+    const GID_ABA = "2115875129";
+    const URL_CSV = `https://docs.google.com/spreadsheets/d/${ID_PLANILHA}/export?format=csv&gid=${GID_ABA}`;
     
-    // URL PÚBLICA DEFINITIVA DO WEB APP
+    // ENDPOINT PÚBLICO DO APPS SCRIPT
     const URL_APPS_SCRIPT_WEBAPP = "https://script.google.com/macros/s/AKfycbwfh2H8Kdsl4MW2p4GsHK2x2fZCscGnCHIPxG3zyjn4jl-bSZ_iznHBAa0uulq9Z2pK/exec";
 
     const ITENS_POR_PAGINA = 70;
@@ -653,6 +656,25 @@
       return 'color: #111827; font-weight: 600;';
     }
 
+    // Função de leitura resiliente de propriedades do CSV
+    function getProp(obj, ...nomes) {
+      if (!obj) return "";
+      for (const n of nomes) {
+        if (obj[n] !== undefined && obj[n] !== null) return String(obj[n]).trim();
+      }
+      const chaves = Object.keys(obj);
+      for (const n of nomes) {
+        const nLimpo = n.toLowerCase().replace(/[^a-z0-9]/g, "");
+        for (const k of chaves) {
+          const kLimpo = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+          if (kLimpo === nLimpo && obj[k] !== undefined && obj[k] !== null) {
+            return String(obj[k]).trim();
+          }
+        }
+      }
+      return "";
+    }
+
     window.onload = function() {
       modalInstance = new bootstrap.Modal(document.getElementById('modalObs'));
       carregarDados();
@@ -660,7 +682,7 @@
 
     function carregarDados() {
       document.getElementById('txt-ultima-sync').innerText = "Carregando...";
-      const urlSemCache = URL_CSV + "&_t=" + new Date().getTime();
+      const urlSemCache = URL_CSV + "&_nocache=" + new Date().getTime();
 
       Papa.parse(urlSemCache, {
         download: true,
@@ -670,12 +692,12 @@
           let dataControlePlanilha = "";
           if (results.data.length > 0) {
             const linha1 = results.data[0];
-            dataControlePlanilha = linha1["Última Atualização"] || linha1["Ultima Atualizacao"] || linha1["Qtd TAs Baixado"] || linha1["__parsed_extra"]?.[0] || "";
+            dataControlePlanilha = getProp(linha1, "Última Atualização", "Ultima Atualizacao", "Qtd TAs Baixado");
           }
 
           dadosGlobais = results.data.map(r => {
-            const siteLimpo = (r["SITE"] || "").trim();
-            let tipoRedePlanilha = (r["TIpo Rede"] || r["Tipo Rede"] || r["Tipo de Rede"] || r["Rede"] || "").trim();
+            const siteLimpo = getProp(r, "SITE", "Site");
+            let tipoRedePlanilha = getProp(r, "Tipo Rede", "TIpo Rede", "Tipo de Rede", "Rede");
 
             if (!tipoRedePlanilha) {
               if (siteLimpo.length === 2) {
@@ -685,26 +707,27 @@
               }
             }
 
-            const statusTratado = normalizarStatus(r["Status Atendimento"]);
+            const statusBruto = getProp(r, "Status Atendimento", "Status de Atendimento", "status_atendimento");
+            const statusTratado = normalizarStatus(statusBruto);
 
             return {
-              ta: r["TA"] || "",
-              ddd: r["DDD"] || "",
-              coordenador: limparTexto(r["Coordenador"] || ""),
+              ta: getProp(r, "TA", "ta"),
+              ddd: getProp(r, "DDD", "ddd"),
+              coordenador: limparTexto(getProp(r, "Coordenador")),
               site: siteLimpo,
-              localidade: limparTexto(r["Localidade"] || ""),
-              site_nome: limparTexto(r["SITE Nome"] || ""),
-              qtd_ta: r["QTD TA"] || "",
-              alarme: limparTexto(r["Alarme"] || ""),
-              tempo_total: r["Tempo Total"] || "",
-              tempo_gestor: r["Tempo Gestor Tel"] || "",
-              prioridade: (r["Prioridade"] || "").trim(),
-              grupo_responsavel: r["Grupo Responsavel"] || "",
-              status_sla: r["STATUS SLA"] || "",
+              localidade: limparTexto(getProp(r, "Localidade")),
+              site_nome: limparTexto(getProp(r, "SITE Nome", "Site Nome")),
+              qtd_ta: getProp(r, "QTD TA", "Qtd TA"),
+              alarme: limparTexto(getProp(r, "Alarme")),
+              tempo_total: getProp(r, "Tempo Total"),
+              tempo_gestor: getProp(r, "Tempo Gestor Tel", "Tempo Gestor"),
+              prioridade: getProp(r, "Prioridade"),
+              grupo_responsavel: getProp(r, "Grupo Responsavel", "Grupo Responsável"),
+              status_sla: getProp(r, "STATUS SLA", "Status SLA", "SLA"),
               tipo_rede: tipoRedePlanilha,
               status_atendimento: statusTratado,
-              previsao: r["Previsão"] || "",
-              observacao: r["Observação"] || ""
+              previsao: getProp(r, "Previsão", "Previsao"),
+              observacao: getProp(r, "Observação", "Observacao", "Historico")
             };
           }).filter(d => d.ta && d.ta.trim() !== "");
 
@@ -817,7 +840,7 @@
       // 7. GMG ACOPL.
       document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
 
-      // 8. GMG EM DESLOCAMENTO (DEM DESLOCAMENTO)
+      // 8. DEM DESLOCAMENTO
       document.getElementById('card-gmg-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'GMG em deslocamento').length;
 
       // 9. FILA DE ATENDIMENTO
@@ -1190,7 +1213,6 @@
         boxHistorico.style.display = 'none';
       }
 
-      // Campo para novo andamento limpo
       document.getElementById('modal-texto-obs').value = '';
       modalInstance.show();
     }
@@ -1214,7 +1236,6 @@
         observacao: novaObs
       });
 
-      // text/plain com no-cors evita bloqueios de CORS e preflight no Google Apps Script
       fetch(URL_APPS_SCRIPT_WEBAPP, {
         method: "POST",
         mode: "no-cors",
