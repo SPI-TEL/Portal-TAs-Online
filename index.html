@@ -13,7 +13,7 @@
   <!-- SCRIPT DE CONTROLE DE VERSÃO LIMPO -->
   <script>
     (function() {
-      const VERSAO_ATUAL = "v5";
+      const VERSAO_ATUAL = "v6";
 
       const urlParams = new URLSearchParams(window.location.search);
       const versaoSalva = localStorage.getItem("app_versao_portal_tas");
@@ -32,8 +32,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   
-  <!-- Scripts: PapaParse, SheetJS e Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- Scripts: SheetJS e Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -502,7 +501,7 @@
 
   </div>
 
-  <!-- MODAL DE ATUALIZAÇÃO COM HISTÓRICO PRESERVADO -->
+  <!-- MODAL DE ATUALIZAÇÃO -->
   <div class="modal fade" id="modalObs" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -571,12 +570,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // ENDPOINT DINÂMICO EM TEMPO REAL (SEM CACHE DE PUBLICAÇÃO)
-    const ID_PLANILHA = "1lHNRe6mzgAng9PoPpHh-JJygpNkSEUJ0JtZxD_9fOms";
-    const GID_ABA = "2115875129";
-    const URL_CSV = `https://docs.google.com/spreadsheets/d/${ID_PLANILHA}/export?format=csv&gid=${GID_ABA}`;
-    
-    // ENDPOINT PÚBLICO DO APPS SCRIPT
+    // ENDPOINT PÚBLICO DIRETO DO APPS SCRIPT (TEMPO REAL E SEM BLOQUEIO DE CORS)
     const URL_APPS_SCRIPT_WEBAPP = "https://script.google.com/macros/s/AKfycbwfh2H8Kdsl4MW2p4GsHK2x2fZCscGnCHIPxG3zyjn4jl-bSZ_iznHBAa0uulq9Z2pK/exec";
 
     const ITENS_POR_PAGINA = 70;
@@ -590,7 +584,7 @@
 
     function limparTexto(txt) {
       if (!txt) return "";
-      return txt
+      return String(txt)
         .replace(/SERVIÃƒÂ‰|SERVIÃƒÂ|SERVIÃ‰|SERVIÃ/g, "SERVIÇ")
         .replace(/RIBEIRÃƒÂƒO|RIBEIRÃƒO|RIBEIRÃO/g, "RIBEIRÃO")
         .replace(/GRAÃƒÂ‡AS|GRAÃ‡AS/g, "GRAÇAS")
@@ -600,7 +594,7 @@
     }
 
     function normalizarStatus(statusBruto) {
-      const s = (statusBruto || "").trim();
+      const s = String(statusBruto || "").trim();
       const sLower = s.toLowerCase();
       if (sLower === "em tratativa" || sLower === "em atendimento" || sLower === "técnico em tratativas (in loco)" || sLower === "tecnico em tratativas (in loco)") {
         return "Técnico em Tratativas (in loco)";
@@ -656,7 +650,6 @@
       return 'color: #111827; font-weight: 600;';
     }
 
-    // Função de leitura resiliente de propriedades do CSV
     function getProp(obj, ...nomes) {
       if (!obj) return "";
       for (const n of nomes) {
@@ -680,22 +673,19 @@
       carregarDados();
     };
 
+    // LEITURA EM TEMPO REAL DIRETAMENTE DO APPS SCRIPT VIA JSON
     function carregarDados() {
       document.getElementById('txt-ultima-sync').innerText = "Carregando...";
-      const urlSemCache = URL_CSV + "&_nocache=" + new Date().getTime();
+      const urlConsulta = URL_APPS_SCRIPT_WEBAPP + "?_t=" + new Date().getTime();
 
-      Papa.parse(urlSemCache, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-          let dataControlePlanilha = "";
-          if (results.data.length > 0) {
-            const linha1 = results.data[0];
-            dataControlePlanilha = getProp(linha1, "Última Atualização", "Ultima Atualizacao", "Qtd TAs Baixado");
+      fetch(urlConsulta)
+        .then(response => response.json())
+        .then(resposta => {
+          if (!resposta.sucesso || !resposta.dados) {
+            throw new Error(resposta.erro || "Falha na resposta da folha");
           }
 
-          dadosGlobais = results.data.map(r => {
+          dadosGlobais = resposta.dados.map(r => {
             const siteLimpo = getProp(r, "SITE", "Site");
             let tipoRedePlanilha = getProp(r, "Tipo Rede", "TIpo Rede", "Tipo de Rede", "Rede");
 
@@ -738,17 +728,16 @@
           const agora = new Date().toTimeString().split(' ')[0];
           document.getElementById('txt-ultima-sync').innerText = agora;
           
-          if (dataControlePlanilha) {
-            document.getElementById('txt-base-atualizada').innerText = `Base atualizada: ${dataControlePlanilha}`;
+          if (resposta.dataAtualizacao) {
+            document.getElementById('txt-base-atualizada').innerText = `Base atualizada: ${resposta.dataAtualizacao}`;
           } else {
             document.getElementById('txt-base-atualizada').innerText = `Base atualizada: ${dadosGlobais.length} TAs`;
           }
-        },
-        error: function(err) {
+        })
+        .catch(err => {
           document.getElementById('txt-ultima-sync').innerText = "Erro!";
-          console.error(err);
-        }
-      });
+          console.error("Erro ao sincronizar dados em tempo real:", err);
+        });
     }
 
     function popularFiltros(dados) {
@@ -806,10 +795,9 @@
         return atendeEncerramento && atendeDdd && atendePrio && atendeSla && atendeRede && atendeStatusOp && atendeBusca;
       });
 
-      // 1. TOTAL TA
+      // CARDS TOTALIZADORES
       document.getElementById('card-total').innerText = dadosFiltradosAtuais.length;
 
-      // 2. SLA TRIPLO (NO PRAZO | VENCENDO | FORA)
       const countVencendo = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('VENCENDO')).length;
       const countFora = dadosFiltradosAtuais.filter(d => (d.status_sla || '').toUpperCase().includes('FORA')).length;
       const countNoPrazo = dadosFiltradosAtuais.filter(d => {
@@ -821,29 +809,19 @@
       document.getElementById('card-vencendo').innerText = countVencendo;
       document.getElementById('card-fora').innerText = countFora;
 
-      // 3. TRATATIVAS (IN-LOCO) + AGUARDANDO BAIXA ASTRO
       document.getElementById('card-inloco').innerText = dadosFiltradosAtuais.filter(d => 
         d.status_atendimento === 'Técnico em Tratativas (in loco)' || d.status_atendimento === 'Aguardando baixa do Astro'
       ).length;
 
-      // 4. EM DESLOCAMENTO
       document.getElementById('card-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Em deslocamento').length;
-
-      // 5. REDE EXTERNA
       document.getElementById('card-rede-externa').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Rede Externa').length;
-
-      // 6. RESTRIÇÃO DE ACESSO
       document.getElementById('card-liberacao-acesso').innerText = dadosFiltradosAtuais.filter(d => 
         d.status_atendimento === 'Restrição de Acesso' || d.status_atendimento === 'Aguard. Liberação Acesso'
       ).length;
 
-      // 7. GMG ACOPL.
       document.getElementById('card-gmg').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'Com GMG acoplado').length;
-
-      // 8. DEM DESLOCAMENTO
       document.getElementById('card-gmg-deslocamento').innerText = dadosFiltradosAtuais.filter(d => d.status_atendimento === 'GMG em deslocamento').length;
 
-      // 9. FILA DE ATENDIMENTO
       document.getElementById('card-fila-atendimento').innerText = dadosFiltradosAtuais.filter(d => 
         d.status_atendimento === 'Pendente' || d.status_atendimento === 'Aguardando Técnico' || d.status_atendimento === 'Fila de Atendimento'
       ).length;
@@ -1203,7 +1181,6 @@
       const statusPadronizado = normalizarStatus(item.status_atendimento);
       selectStatus.value = statusPadronizado;
       
-      // Exibe histórico se existir
       const boxHistorico = document.getElementById('box-historico-anterior');
       const visualHistorico = document.getElementById('modal-historico-visual');
       if (item.observacao && item.observacao.trim() !== '') {
