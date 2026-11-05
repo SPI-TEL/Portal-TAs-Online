@@ -13,7 +13,7 @@
   <!-- SCRIPT DE CONTROLE DE VERSÃO LIMPO -->
   <script>
     (function() {
-      const VERSAO_ATUAL = "v11";
+      const VERSAO_ATUAL = "v12";
 
       const urlParams = new URLSearchParams(window.location.search);
       const versaoSalva = localStorage.getItem("app_versao_portal_tas");
@@ -228,36 +228,94 @@
     }
 
     /* BADGES DE PRIORIDADE */
-    .badge-prio-1 { background-color: #dc3545 !important; color: #ffffff !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
-    .badge-prio-2 { background-color: #fd7e14 !important; color: #ffffff !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
-    .badge-prio-3 { background-color: #ffc107 !important; color: #000000 !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
-    .badge-prio-4 { background-color: #0dcaf0 !important; color: #000000 !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
-    .badge-prio-def { background-color: #212529 !important; color: #ffffff !important; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
+    .badge-prio-1 { background-color: #fff1f2 !important; border: 1px solid #fecdd3 !important; color: #be123c !important; font-weight: 700; padding: 2px 6px; border-radius: 5px; font-size: 0.67rem; }
+    .badge-prio-2 { background-color: #fff7ed !important; border: 1px solid #fed7aa !important; color: #c2410c !important; font-weight: 700; padding: 2px 6px; border-radius: 5px; font-size: 0.67rem; }
+    .badge-prio-3 { background-color: #fffbeb !important; border: 1px solid #fde68a !important; color: #b45309 !important; font-weight: 700; padding: 2px 6px; border-radius: 5px; font-size: 0.67rem; }
+    .badge-prio-4 { background-color: #f0fdfa !important; border: 1px solid #ccfbf1 !important; color: #0f766e !important; font-weight: 700; padding: 2px 6px; border-radius: 5px; font-size: 0.67rem; }
+    .badge-prio-def { background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; color: #475569 !important; font-weight: 700; padding: 2px 6px; border-radius: 5px; font-size: 0.67rem; }
 
-    /* BADGES DE SLA */
-    .badge-vencendo { background-color: #ffc107; color: #000; font-weight: bold; font-size: 0.74rem; }
-    .badge-vencendo-20m { background-color: #dc3545 !important; color: #ffffff !important; font-weight: bold; font-size: 0.74rem; }
-    .badge-fora { background-color: #dc3545; color: #fff; font-weight: bold; font-size: 0.74rem; }
-    
-    .badge-no-prazo {
-      background: transparent !important;
-      color: #198754 !important;
-      font-weight: 700;
-      font-size: 0.75rem;
-      letter-spacing: 0.2px;
-      border: none !important;
-      padding: 0;
+    /* NOVO PADRÃO SOFT BADGES (IMAGEM 1) - SLA */
+    .badge-soft {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 0.73rem;
+      font-weight: 600;
+      border-radius: 6px;
+      line-height: 1.2;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .badge-sla-fora {
+      background-color: #fff1f2 !important;
+      border: 1px solid #fecdd3 !important;
+      color: #e11d48 !important;
+    }
+    .badge-sla-vencendo {
+      background-color: #fffbeb !important;
+      border: 1px solid #fde68a !important;
+      color: #d97706 !important;
+    }
+    .badge-sla-vencendo20m {
+      background-color: #fff1f2 !important;
+      border: 1.5px solid #fda4af !important;
+      color: #be123c !important;
+      font-weight: 700 !important;
+    }
+    .badge-sla-noprazo {
+      background-color: #f0fdf4 !important;
+      border: 1px solid #bbf7d0 !important;
+      color: #15803d !important;
     }
 
+    /* NOVO PADRÃO SOFT BADGES (IMAGEM 1) - STATUS DE ATENDIMENTO */
+    .badge-status-inloco {
+      background-color: #ecfdf5 !important;
+      border: 1px solid #a7f3d0 !important;
+      color: #047857 !important;
+    }
     .badge-status-pendente {
-      background-color: #6c757d !important;
-      color: #ffffff !important;
-      font-weight: 600;
-      font-size: 0.74rem;
+      background-color: #f8fafc !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #475569 !important;
+    }
+    .badge-status-deslocamento {
+      background-color: #f0f9ff !important;
+      border: 1px solid #bae6fd !important;
+      color: #0369a1 !important;
+    }
+    .badge-status-externa {
+      background-color: #faf5ff !important;
+      border: 1px solid #e9d5ff !important;
+      color: #7e22ce !important;
+    }
+    .badge-status-restricao {
+      background-color: #fff7ed !important;
+      border: 1px solid #fed7aa !important;
+      color: #c2410c !important;
+    }
+    .badge-status-gmg {
+      background-color: #ecfdf5 !important;
+      border: 1px solid #86efac !important;
+      color: #15803d !important;
+    }
+    .badge-status-gmg-pendente {
+      background-color: #fdf2f8 !important;
+      border: 1px solid #fbcfe8 !important;
+      color: #be185d !important;
+    }
+    .badge-status-sobressalente {
+      background-color: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #334155 !important;
+    }
+    .badge-status-encerrado {
+      background-color: #f3f4f6 !important;
+      border: 1px solid #d1d5db !important;
+      color: #1f2937 !important;
     }
 
     .btn-acao-tabela {
-      background-color: #f1f5f9;
+      background-color: #f8fafc;
       border: 1px solid #cbd5e1;
       color: #0f172a;
       font-weight: 600;
@@ -1085,45 +1143,45 @@
       tbody.innerHTML = '';
 
       dadosPagina.forEach(d => {
-        let slaBadgeClass = 'badge bg-secondary';
+        // FORMATAÇÃO SOFT BADGE DO SLA (IMAGEM 1)
+        let slaBadgeClass = 'badge-soft badge-sla-noprazo';
         const sla = (d.status_sla || '').toUpperCase();
         
         if (sla.includes('VENCENDO-20M') || sla.includes('VENCENDO - 20M') || sla.includes('VENCENDO 20M')) {
-          slaBadgeClass = 'badge badge-vencendo-20m';
+          slaBadgeClass = 'badge-soft badge-sla-vencendo20m';
         } else if (sla.includes('VENCENDO')) {
-          slaBadgeClass = 'badge badge-vencendo';
+          slaBadgeClass = 'badge-soft badge-sla-vencendo';
         } else if (sla.includes('FORA')) {
-          slaBadgeClass = 'badge badge-fora';
+          slaBadgeClass = 'badge-soft badge-sla-fora';
         } else if (sla.includes('NO PRAZO') || sla.includes('DENTRO')) {
-          slaBadgeClass = 'badge-no-prazo';
+          slaBadgeClass = 'badge-soft badge-sla-noprazo';
         }
 
-        let statusBadgeClass = 'badge bg-info text-dark';
+        // FORMATAÇÃO SOFT BADGE DO STATUS OPERACIONAL (IMAGEM 1)
+        let statusBadgeClass = 'badge-soft badge-status-pendente';
         const statusAtual = d.status_atendimento;
 
         if (statusAtual === 'Pendente' || statusAtual === 'Aguardando Técnico') {
-          statusBadgeClass = 'badge badge-status-pendente';
+          statusBadgeClass = 'badge-soft badge-status-pendente';
         } else if (statusAtual === 'Técnico em Tratativas (in loco)' || statusAtual === 'Aguardando baixa do Astro') {
-          statusBadgeClass = 'badge bg-success text-white';
+          statusBadgeClass = 'badge-soft badge-status-inloco';
+        } else if (statusAtual === 'Em deslocamento') {
+          statusBadgeClass = 'badge-soft badge-status-deslocamento';
         } else if (statusAtual === 'Rede Externa') {
-          statusBadgeClass = 'badge text-white';
+          statusBadgeClass = 'badge-soft badge-status-externa';
         } else if (statusAtual === 'Aguard. Liberação Acesso' || statusAtual === 'Restrição de Acesso') {
-          statusBadgeClass = 'badge text-white';
-        } else if (statusAtual === 'Encerrado') {
-          statusBadgeClass = 'badge bg-dark text-white';
+          statusBadgeClass = 'badge-soft badge-status-restricao';
         } else if (statusAtual === 'Com GMG acoplado') {
-          statusBadgeClass = 'badge bg-success text-white';
+          statusBadgeClass = 'badge-soft badge-status-gmg';
         } else if (statusAtual === 'GMG em deslocamento') {
-          statusBadgeClass = 'badge bg-info text-dark';
+          statusBadgeClass = 'badge-soft badge-status-deslocamento';
         } else if (statusAtual === 'Pendente GMG') {
-          statusBadgeClass = 'badge text-white';
+          statusBadgeClass = 'badge-soft badge-status-gmg-pendente';
         } else if (statusAtual === 'Sobressalente') {
-          statusBadgeClass = 'badge bg-secondary text-white';
+          statusBadgeClass = 'badge-soft badge-status-sobressalente';
+        } else if (statusAtual === 'Encerrado') {
+          statusBadgeClass = 'badge-soft badge-status-encerrado';
         }
-
-        let inlineStyle = (statusAtual === 'Rede Externa') ? 'style="background-color: #6f42c1;"' : 
-                          (statusAtual === 'Aguard. Liberação Acesso' || statusAtual === 'Restrição de Acesso') ? 'style="background-color: #fd7e14;"' : 
-                          (statusAtual === 'Pendente GMG') ? 'style="background-color: #d63384;"' : '';
 
         const estiloTempo = obterEstiloTempoGestor(d.tempo_gestor);
         const classePrio = obterClassePrioridade(d.prioridade);
@@ -1145,8 +1203,8 @@
             <td><small>${d.alarme}</small></td>
             <td><code style="${estiloTempo}">${d.tempo_gestor}</code></td>
             <td><span class="${slaBadgeClass}">${d.status_sla}</span></td>
-            <td><span class="badge bg-light text-dark border">${d.tipo_rede || '-'}</span></td>
-            <td><span class="${statusBadgeClass}" ${inlineStyle}>${d.status_atendimento}</span></td>
+            <td><span class="badge bg-light text-secondary border">${d.tipo_rede || '-'}</span></td>
+            <td><span class="${statusBadgeClass}">${d.status_atendimento}</span></td>
             <td><small>${d.previsao || '-'}</small></td>
             <td class="obs-cell" title="${d.observacao}">${d.observacao ? d.observacao : '<span class="text-muted">-</span>'}</td>
           </tr>
@@ -1294,7 +1352,7 @@
               type: 'bar',
               label: 'Volume Total',
               data: volumeTotal,
-              backgroundColor: '#335384', // Tom azul escuro corporativo idêntico à imagem 2
+              backgroundColor: '#335384',
               borderColor: '#243f66',
               borderWidth: 1,
               borderRadius: 6,
@@ -1309,8 +1367,8 @@
               borderWidth: 2.5,
               tension: 0.25,
               fill: false,
-              pointRadius: 3,        // Bolinha reduzida
-              pointHoverRadius: 4,   // Efeito hover sutil
+              pointRadius: 3,
+              pointHoverRadius: 4,
               order: 1
             }
           ]
