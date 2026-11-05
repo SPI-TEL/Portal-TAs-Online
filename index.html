@@ -13,7 +13,7 @@
   <!-- SCRIPT DE CONTROLE DE VERSÃO LIMPO -->
   <script>
     (function() {
-      const VERSAO_ATUAL = "v8";
+      const VERSAO_ATUAL = "v9";
 
       const urlParams = new URLSearchParams(window.location.search);
       const versaoSalva = localStorage.getItem("app_versao_portal_tas");
@@ -189,6 +189,42 @@
       padding-left: 7px !important;
       border-color: #cbd5e1;
       border-radius: 5px;
+    }
+
+    /* DROPDOWNS MULTIPLA ESCOLHA */
+    .dropdown-multiselect .btn-multi {
+      font-size: 0.77rem !important;
+      height: 28px !important;
+      padding: 2px 8px !important;
+      border-color: #cbd5e1;
+      background-color: #fff;
+      color: #334155;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .dropdown-multiselect .dropdown-menu {
+      max-height: 260px;
+      overflow-y: auto;
+      font-size: 0.77rem;
+      padding: 6px 8px;
+      min-width: 180px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .dropdown-multiselect .form-check {
+      margin-bottom: 4px;
+    }
+    .dropdown-multiselect .form-check-input {
+      cursor: pointer;
+    }
+    .dropdown-multiselect .form-check-label {
+      cursor: pointer;
+      user-select: none;
     }
 
     /* BADGES DE PRIORIDADE */
@@ -400,7 +436,7 @@
 
     </div>
 
-    <!-- FILTROS COMPACTOS -->
+    <!-- FILTROS COMPACTOS COM MÚLTIPLA ESCOLHA -->
     <div class="card card-filtros bg-white">
       <div class="row g-2 align-items-end">
         <div class="col-md-2">
@@ -411,26 +447,92 @@
             <option value="todos">Todos</option>
           </select>
         </div>
+
+        <!-- FILTRO DDD MULTI -->
         <div class="col-md-1">
           <label class="filtro-label">DDD</label>
-          <select id="filtro-ddd" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
+          <div class="dropdown dropdown-multiselect" id="multi-ddd">
+            <button class="btn btn-sm btn-outline-secondary btn-multi" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+              <span class="btn-text">Todos</span> <i class="bi bi-chevron-down small"></i>
+            </button>
+            <div class="dropdown-menu">
+              <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                <a href="javascript:void(0)" class="text-decoration-none small text-primary fw-bold" onclick="marcarTodosMulti('ddd', true)">Todos</a>
+                <a href="javascript:void(0)" class="text-decoration-none small text-danger fw-bold" onclick="marcarTodosMulti('ddd', false)">Limpar</a>
+              </div>
+              <div class="multi-itens" id="itens-filtro-ddd"></div>
+            </div>
+          </div>
         </div>
+
+        <!-- FILTRO PRIORIDADE MULTI -->
         <div class="col-md-1">
           <label class="filtro-label">Prioridade</label>
-          <select id="filtro-prioridade" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todas</option></select>
+          <div class="dropdown dropdown-multiselect" id="multi-prio">
+            <button class="btn btn-sm btn-outline-secondary btn-multi" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+              <span class="btn-text">Todas</span> <i class="bi bi-chevron-down small"></i>
+            </button>
+            <div class="dropdown-menu">
+              <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                <a href="javascript:void(0)" class="text-decoration-none small text-primary fw-bold" onclick="marcarTodosMulti('prio', true)">Todas</a>
+                <a href="javascript:void(0)" class="text-decoration-none small text-danger fw-bold" onclick="marcarTodosMulti('prio', false)">Limpar</a>
+              </div>
+              <div class="multi-itens" id="itens-filtro-prio"></div>
+            </div>
+          </div>
         </div>
+
+        <!-- FILTRO STATUS SLA MULTI -->
         <div class="col-md-2">
           <label class="filtro-label">Status SLA</label>
-          <select id="filtro-sla" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
+          <div class="dropdown dropdown-multiselect" id="multi-sla">
+            <button class="btn btn-sm btn-outline-secondary btn-multi" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+              <span class="btn-text">Todos</span> <i class="bi bi-chevron-down small"></i>
+            </button>
+            <div class="dropdown-menu">
+              <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                <a href="javascript:void(0)" class="text-decoration-none small text-primary fw-bold" onclick="marcarTodosMulti('sla', true)">Todos</a>
+                <a href="javascript:void(0)" class="text-decoration-none small text-danger fw-bold" onclick="marcarTodosMulti('sla', false)">Limpar</a>
+              </div>
+              <div class="multi-itens" id="itens-filtro-sla"></div>
+            </div>
+          </div>
         </div>
+
+        <!-- FILTRO TIPO DE REDE MULTI -->
         <div class="col-md-2">
           <label class="filtro-label">Tipo de Rede</label>
-          <select id="filtro-rede" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todas</option></select>
+          <div class="dropdown dropdown-multiselect" id="multi-rede">
+            <button class="btn btn-sm btn-outline-secondary btn-multi" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+              <span class="btn-text">Todas</span> <i class="bi bi-chevron-down small"></i>
+            </button>
+            <div class="dropdown-menu">
+              <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                <a href="javascript:void(0)" class="text-decoration-none small text-primary fw-bold" onclick="marcarTodosMulti('rede', true)">Todas</a>
+                <a href="javascript:void(0)" class="text-decoration-none small text-danger fw-bold" onclick="marcarTodosMulti('rede', false)">Limpar</a>
+              </div>
+              <div class="multi-itens" id="itens-filtro-rede"></div>
+            </div>
+          </div>
         </div>
+
+        <!-- FILTRO STATUS ATENDIMENTO MULTI -->
         <div class="col-md-2">
           <label class="filtro-label">Status Atendimento</label>
-          <select id="filtro-status-op" class="form-select form-select-sm" onchange="aplicarFiltros()"><option value="">Todos</option></select>
+          <div class="dropdown dropdown-multiselect" id="multi-status">
+            <button class="btn btn-sm btn-outline-secondary btn-multi" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+              <span class="btn-text">Todos</span> <i class="bi bi-chevron-down small"></i>
+            </button>
+            <div class="dropdown-menu" style="min-width: 230px;">
+              <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                <a href="javascript:void(0)" class="text-decoration-none small text-primary fw-bold" onclick="marcarTodosMulti('status', true)">Todos</a>
+                <a href="javascript:void(0)" class="text-decoration-none small text-danger fw-bold" onclick="marcarTodosMulti('status', false)">Limpar</a>
+              </div>
+              <div class="multi-itens" id="itens-filtro-status"></div>
+            </div>
+          </div>
         </div>
+
         <div class="col-md-2">
           <label class="filtro-label">Buscar (Site / Alarme / TA)</label>
           <input type="text" id="filtro-busca" class="form-control form-control-sm" placeholder="Digite para buscar..." onkeyup="aplicarFiltros()">
@@ -444,7 +546,7 @@
         <div class="chart-container-card">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="m-0 fw-bold text-dark"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Volume por DDD vs Fila de Atendimento</h6>
-            <small class="text-muted">Colunas: Volume Total | Linha: Pendente / Aguardando</small>
+            <small class="text-muted">Azul: Total | Laranja: Fila de Atendimento</small>
           </div>
           <div style="position: relative; height: 230px; width: 100%;">
             <canvas id="graficoDddSla"></canvas>
@@ -544,6 +646,8 @@
               <option value="Restrição de Acesso">Restrição de Acesso</option>
               <option value="Com GMG acoplado">Com GMG acoplado</option>
               <option value="GMG em deslocamento">GMG em deslocamento</option>
+              <option value="Pendente GMG">Pendente GMG</option>
+              <option value="Sobressalente">Sobressalente</option>
               <option value="Encerrado">Encerrado</option>
             </select>
           </div>
@@ -608,12 +712,11 @@
       return s;
     }
 
-    // LIMPEZA E CORREÇÃO ROBUSTA DE CARACTERES COM MOJIBAKE / UTF-8
+    // LIMPEZA E CORREÇÃO DE CARACTERES COM MOJIBAKE / UTF-8
     function limparTexto(txt) {
       if (!txt) return "";
       let s = String(txt);
 
-      // Correção direta dos padrões de quebra de codificação observados na base
       return s
         .replace(/GUARAÃ[^\w\s]*AÃ[^\w\s]*/gi, "GUARAÇAÍ")
         .replace(/ECHAPORÃ[^\w\s]*/gi, "ECHAPORÃ")
@@ -632,7 +735,6 @@
         .replace(/PENÃ[^\w\s]*POLIS/gi, "PENÁPOLIS")
         .replace(/mÃ[^\w\s]*dulos/gi, "módulos")
         .replace(/gerÃ[^\w\s]*ncia/gi, "gerência")
-        // Tratamento de duplos bytes genéricos UTF-8 / Windows-1252
         .replace(/Ã¡/g, "á").replace(/Ã/g, "Á")
         .replace(/Ã©/g, "é").replace(/Ã‰/g, "É")
         .replace(/Ã­/g, "í").replace(/Ã/g, "Í")
@@ -644,7 +746,7 @@
         .replace(/Ãª/g, "ê").replace(/ÃŠ/g, "Ê")
         .replace(/Ã´/g, "ô").replace(/Ã”/g, "Ô")
         .replace(/Ã§/g, "ç").replace(/Ã‡/g, "Ç")
-        .replace(/Ã/g, "Á"); // Fallback quando sobra o prefixo isolado
+        .replace(/Ã/g, "Á");
     }
 
     function normalizarStatus(statusBruto) {
@@ -667,6 +769,12 @@
       }
       if (sLower === "gmg em deslocamento" || sLower === "dem deslocamento" || sLower === "deslocamento gmg") {
         return "GMG em deslocamento";
+      }
+      if (sLower === "pendente gmg") {
+        return "Pendente GMG";
+      }
+      if (sLower === "sobressalente" || sLower === "aguardando sobressalente") {
+        return "Sobressalente";
       }
       if (sLower === "aguardando técnico" || sLower === "aguardando tecnico") {
         return "Aguardando Técnico";
@@ -777,7 +885,7 @@
             };
           }).filter(d => d.ta && d.ta.trim() !== "");
 
-          popularFiltros(dadosGlobais);
+          popularFiltrosMulti(dadosGlobais);
           paginaAtual = 1;
           renderizar();
 
@@ -796,22 +904,80 @@
         });
     }
 
-    function popularFiltros(dados) {
-      preencherSelect('filtro-ddd', [...new Set(dados.map(d => d.ddd))].sort());
-      preencherSelect('filtro-prioridade', [...new Set(dados.map(d => d.prioridade))].sort());
-      preencherSelect('filtro-sla', [...new Set(dados.map(d => d.status_sla))].sort());
-      preencherSelect('filtro-rede', [...new Set(dados.map(d => d.tipo_rede))].sort());
-      preencherSelect('filtro-status-op', [...new Set(dados.map(d => d.status_atendimento))].sort());
+    // CONSTRUÇÃO E GERENCIAMENTO DOS FILTROS MULTI-SELECT
+    function popularFiltrosMulti(dados) {
+      preencherMultiOptions('ddd', [...new Set(dados.map(d => d.ddd))].filter(Boolean).sort());
+      preencherMultiOptions('prio', [...new Set(dados.map(d => d.prioridade))].filter(Boolean).sort());
+      preencherMultiOptions('sla', [...new Set(dados.map(d => d.status_sla))].filter(Boolean).sort());
+      preencherMultiOptions('rede', [...new Set(dados.map(d => d.tipo_rede))].filter(Boolean).sort());
+
+      // Lista de status com 'Fila de Atendimento' em destaque
+      const statusUnicos = [...new Set(dados.map(d => d.status_atendimento))].filter(Boolean);
+      ['Pendente GMG', 'Sobressalente'].forEach(st => {
+        if (!statusUnicos.includes(st)) statusUnicos.push(st);
+      });
+      statusUnicos.sort();
+
+      // Inclui a opção especial 'Fila de Atendimento' no topo
+      preencherMultiOptions('status', ['Fila de Atendimento', ...statusUnicos]);
     }
 
-    function preencherSelect(id, lista) {
-      const el = document.getElementById(id);
-      const valAtual = el.value;
-      el.innerHTML = '<option value="">Todos</option>';
-      lista.filter(Boolean).forEach(item => {
-        el.innerHTML += `<option value="${item}">${item}</option>`;
+    function preencherMultiOptions(tipo, lista) {
+      const container = document.getElementById(`itens-filtro-${tipo}`);
+      if (!container) return;
+
+      const selecionadosAntes = obterSelecionadosMulti(tipo);
+
+      let html = '';
+      lista.forEach((item, idx) => {
+        const idCheck = `chk-${tipo}-${idx}`;
+        const checked = selecionadosAntes.length === 0 || selecionadosAntes.includes(item) ? 'checked' : '';
+        const badgeDestaque = item === 'Fila de Atendimento' ? 'fw-bold text-primary' : '';
+
+        html += `
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="${item}" id="${idCheck}" ${checked} onchange="atualizarRotuloMulti('${tipo}')">
+            <label class="form-check-label ${badgeDestaque}" for="${idCheck}">${item}</label>
+          </div>
+        `;
       });
-      el.value = valAtual;
+      container.innerHTML = html;
+      atualizarRotuloMulti(tipo, false);
+    }
+
+    function marcarTodosMulti(tipo, marcar) {
+      const checkboxes = document.querySelectorAll(`#itens-filtro-${tipo} input[type="checkbox"]`);
+      checkboxes.forEach(chk => chk.checked = marcar);
+      atualizarRotuloMulti(tipo);
+    }
+
+    function atualizarRotuloMulti(tipo, render = true) {
+      const checkboxes = document.querySelectorAll(`#itens-filtro-${tipo} input[type="checkbox"]`);
+      const total = checkboxes.length;
+      const selecionados = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+      
+      const btnText = document.querySelector(`#multi-${tipo} .btn-text`);
+      if (btnText) {
+        if (selecionados.length === 0) {
+          btnText.innerText = "Nenhum";
+        } else if (selecionados.length === total) {
+          btnText.innerText = (tipo === 'prio' || tipo === 'rede') ? "Todas" : "Todos";
+        } else if (selecionados.length === 1) {
+          btnText.innerText = selecionados[0];
+        } else {
+          btnText.innerText = `${selecionados.length} selec.`;
+        }
+      }
+
+      if (render) {
+        paginaAtual = 1;
+        renderizar();
+      }
+    }
+
+    function obterSelecionadosMulti(tipo) {
+      const checkboxes = document.querySelectorAll(`#itens-filtro-${tipo} input[type="checkbox"]:checked`);
+      return Array.from(checkboxes).map(c => c.value);
     }
 
     function aplicarFiltros() {
@@ -821,12 +987,13 @@
 
     function renderizar() {
       const fEncerramento = document.getElementById('filtro-encerramento').value;
-      const fDdd = document.getElementById('filtro-ddd').value;
-      const fPrio = document.getElementById('filtro-prioridade').value;
-      const fSla = document.getElementById('filtro-sla').value;
-      const fRede = document.getElementById('filtro-rede').value;
-      const fStatusOp = document.getElementById('filtro-status-op').value;
       const fBusca = (document.getElementById('filtro-busca').value || '').toLowerCase();
+
+      const selDdds = obterSelecionadosMulti('ddd');
+      const selPrios = obterSelecionadosMulti('prio');
+      const selSlas = obterSelecionadosMulti('sla');
+      const selRedes = obterSelecionadosMulti('rede');
+      const selStatus = obterSelecionadosMulti('status');
 
       dadosFiltradosAtuais = dadosGlobais.filter(d => {
         const isEncerrado = d.status_atendimento === 'Encerrado';
@@ -837,11 +1004,33 @@
           atendeEncerramento = isEncerrado;
         }
 
-        const atendeDdd = !fDdd || String(d.ddd) === String(fDdd);
-        const atendePrio = !fPrio || String(d.prioridade) === String(fPrio);
-        const atendeSla = !fSla || String(d.status_sla) === String(fSla);
-        const atendeRede = !fRede || String(d.tipo_rede) === String(fRede);
-        const atendeStatusOp = !fStatusOp || String(d.status_atendimento) === String(fStatusOp);
+        // Filtro DDD Multi
+        const atendeDdd = selDdds.length === 0 || selDdds.includes(String(d.ddd));
+
+        // Filtro Prioridade Multi
+        const atendePrio = selPrios.length === 0 || selPrios.includes(String(d.prioridade));
+
+        // Filtro SLA Multi
+        const atendeSla = selSlas.length === 0 || selSlas.includes(String(d.status_sla));
+
+        // Filtro Rede Multi
+        const atendeRede = selRedes.length === 0 || selRedes.includes(String(d.tipo_rede));
+
+        // Filtro Status Multi (com tratamento especial para 'Fila de Atendimento')
+        let atendeStatusOp = false;
+        if (selStatus.length === 0) {
+          atendeStatusOp = true;
+        } else {
+          if (selStatus.includes(d.status_atendimento)) {
+            atendeStatusOp = true;
+          }
+          if (selStatus.includes('Fila de Atendimento')) {
+            if (d.status_atendimento === 'Pendente' || d.status_atendimento === 'Aguardando Técnico' || d.status_atendimento === 'Fila de Atendimento') {
+              atendeStatusOp = true;
+            }
+          }
+        }
+
         const atendeBusca = !fBusca || 
           (d.site_nome || '').toLowerCase().includes(fBusca) ||
           (d.site || '').toLowerCase().includes(fBusca) ||
@@ -936,10 +1125,15 @@
           statusBadgeClass = 'badge bg-success text-white';
         } else if (statusAtual === 'GMG em deslocamento') {
           statusBadgeClass = 'badge bg-info text-dark';
+        } else if (statusAtual === 'Pendente GMG') {
+          statusBadgeClass = 'badge text-white';
+        } else if (statusAtual === 'Sobressalente') {
+          statusBadgeClass = 'badge bg-secondary text-white';
         }
 
         let inlineStyle = (statusAtual === 'Rede Externa') ? 'style="background-color: #6f42c1;"' : 
-                          (statusAtual === 'Aguard. Liberação Acesso' || statusAtual === 'Restrição de Acesso') ? 'style="background-color: #fd7e14;"' : '';
+                          (statusAtual === 'Aguard. Liberação Acesso' || statusAtual === 'Restrição de Acesso') ? 'style="background-color: #fd7e14;"' : 
+                          (statusAtual === 'Pendente GMG') ? 'style="background-color: #d63384;"' : '';
 
         const estiloTempo = obterEstiloTempoGestor(d.tempo_gestor);
         const classePrio = obterClassePrioridade(d.prioridade);
@@ -1026,6 +1220,7 @@
       document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    // RENDERIZAÇÃO DO GRÁFICO DE VOLUME COM RÓTULOS DE DADOS VISÍVEIS DIRETAMENTE
     function renderizarGraficoDdd(dados) {
       const dddsUnicos = [...new Set(dados.map(d => d.ddd))].filter(Boolean).sort();
       const volumeTotal = [];
@@ -1039,10 +1234,40 @@
         ).length);
       });
 
+      // Plugin personalizado para desenhar os números no topo das barras e sobre os pontos
+      const rotulosVolumePlugin = {
+        id: 'rotulosVolumePlugin',
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          chart.data.datasets.forEach((dataset, i) => {
+            const meta = chart.getDatasetMeta(i);
+            meta.data.forEach((element, index) => {
+              const val = dataset.data[index];
+              if (val === undefined || val === null || val === 0) return;
+
+              ctx.save();
+              ctx.font = 'bold 10px sans-serif';
+              ctx.textAlign = 'center';
+
+              if (dataset.type === 'bar') {
+                ctx.fillStyle = '#0f172a';
+                ctx.fillText(val, element.x, element.y - 4);
+              } else if (dataset.type === 'line') {
+                ctx.fillStyle = '#d97706';
+                ctx.fillText(val, element.x, element.y - 8);
+              }
+              ctx.restore();
+            });
+          });
+        }
+      };
+
       const ctx = document.getElementById('graficoDddSla').getContext('2d');
       if (chartInstanceDdd) {
         chartInstanceDdd.destroy();
       }
+
+      const maxVal = Math.max(...volumeTotal, ...volumeFila, 0);
 
       chartInstanceDdd = new Chart(ctx, {
         type: 'bar',
@@ -1076,15 +1301,24 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: { top: 18 }
+          },
           plugins: {
             legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10.5, weight: '600' } } },
             tooltip: { mode: 'index', intersect: false }
           },
           scales: {
             x: { grid: { display: false } },
-            y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(0, 0, 0, 0.05)' } }
+            y: { 
+              beginAtZero: true, 
+              suggestedMax: maxVal + 2,
+              ticks: { precision: 0 }, 
+              grid: { color: 'rgba(0, 0, 0, 0.05)' } 
+            }
           }
-        }
+        },
+        plugins: [rotulosVolumePlugin]
       });
     }
 
@@ -1234,7 +1468,18 @@
       
       const selectStatus = document.getElementById('modal-status-op');
       const statusPadronizado = normalizarStatus(item.status_atendimento);
-      selectStatus.value = statusPadronizado;
+      
+      let opcaoExiste = false;
+      for (let i = 0; i < selectStatus.options.length; i++) {
+        if (selectStatus.options[i].value === statusPadronizado) {
+          selectStatus.selectedIndex = i;
+          opcaoExiste = true;
+          break;
+        }
+      }
+      if (!opcaoExiste && statusPadronizado) {
+        selectStatus.add(new Option(statusPadronizado, statusPadronizado, true, true));
+      }
       
       const boxHistorico = document.getElementById('box-historico-anterior');
       const visualHistorico = document.getElementById('modal-historico-visual');
